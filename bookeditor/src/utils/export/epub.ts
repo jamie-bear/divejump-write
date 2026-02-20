@@ -144,10 +144,26 @@ function buildChapterXHTML(sec: Section, _book: Book): string {
 }
 
 function buildBookCSS(template: Book['template'], paragraphIndent = true): string {
-  const fonts: Record<Book['template'], string> = {
+  const bodyFonts: Record<Book['template'], string> = {
     reedsy: 'Merriweather, Georgia, serif',
     classic: 'Times New Roman, Times, serif',
-    romance: 'Garamond, EB Garamond, Georgia, serif',
+    romance: 'Garamond, "EB Garamond", Georgia, serif',
+  };
+  // Title font matches editor.css .section-chapter-title per template
+  const titleFonts: Record<Book['template'], string> = {
+    reedsy: 'Lato, Arial, sans-serif',
+    classic: 'Times New Roman, Times, serif',
+    romance: 'Garamond, "EB Garamond", Georgia, serif',
+  };
+  const titleExtra: Record<Book['template'], string> = {
+    reedsy: 'text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;',
+    classic: 'text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;',
+    romance: 'font-style: italic; font-weight: 400; letter-spacing: 0.02em;',
+  };
+  const titleSizes: Record<Book['template'], string> = {
+    reedsy: '1.9em',
+    classic: '1.8em',
+    romance: '2.1em',
   };
   const sizes: Record<Book['template'], string> = {
     reedsy: '1.1em',
@@ -155,9 +171,9 @@ function buildBookCSS(template: Book['template'], paragraphIndent = true): strin
     romance: '1.05em',
   };
   const lineHeights: Record<Book['template'], string> = {
-    reedsy: '1.6',
+    reedsy: '1.7',
     classic: '2.0',
-    romance: '1.55',
+    romance: '1.6',
   };
   const pStyle = paragraphIndent
     ? `p { text-indent: 1.5em; margin: 0; }
@@ -165,8 +181,8 @@ p:first-of-type, p:first-child, h1 + p, h2 + p, h3 + p, hr + p { text-indent: 0;
     : `p { text-indent: 0; margin-bottom: 0.8em; }`;
 
   return `
-body { font-family: ${fonts[template]}; font-size: ${sizes[template]}; line-height: ${lineHeights[template]}; margin: 1.5em 2em; color: #1a1a1a; }
-h1 { font-size: 2em; text-align: center; margin: 2em auto 1em; }
+body { font-family: ${bodyFonts[template]}; font-size: ${sizes[template]}; line-height: ${lineHeights[template]}; margin: 1.5em 2em; color: #1a1a1a; }
+h1 { font-family: ${titleFonts[template]}; font-size: ${titleSizes[template]}; text-align: center; margin: 2em auto 1em; ${titleExtra[template]} }
 h2 { font-size: 1.4em; margin: 1.5em 0 0.5em; }
 ${pStyle}
 blockquote { margin: 1em 2em; font-style: italic; }

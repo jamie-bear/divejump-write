@@ -1,5 +1,6 @@
 import type { Book, Section } from '../../types';
 import { extractTextFromJSON as _extractTextFromJSON } from '../../store/bookStore';
+import { parseEpigraph } from '../../components/EpigraphEditor';
 
 // Minimal ePUB 3 builder — pure browser, no server needed.
 // ePUB is a ZIP with a specific structure. We build it using
@@ -69,6 +70,60 @@ function sectionFilename(sec: Section): string {
   return `${sectionId(sec)}.xhtml`;
 }
 
+function isEpigraphSec(sec: Section): boolean {
+  return sec.type === 'frontmatter' && sec.title.trim().toLowerCase() === 'epigraph';
+}
+
+function buildEpigraphXHTML(sec: Section): string {
+  const data = parseEpigraph(sec.content);
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Epigraph</title>
+  <link rel="stylesheet" type="text/css" href="../styles/book.css"/>
+</head>
+<body epub:type="frontmatter">
+  <section epub:type="epigraph" class="epigraph-section" id="${sectionId(sec)}">
+    <div class="epigraph-block">
+      <p class="epigraph-quote">${escHtml(data.quote)}</p>
+      <p class="epigraph-attribution">${data.attribution ? `\u2014\u2009${escHtml(data.attribution)}` : ''}</p>
+    </div>
+  </section>
+</body>
+</html>`;
+}
+
+function buildCoverXHTML(_coverSrc: string): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Cover</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+    img.cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+  </style>
+</head>
+<body epub:type="cover">
+  <section epub:type="cover">
+    <img class="cover" src="../Images/cover.jpg" alt="Cover"/>
+  </section>
+</body>
+</html>`;
+}
+
+/** Extract raw bytes from a base64 data URL */
+function dataUrlToBytes(dataUrl: string): Uint8Array {
+  const base64 = dataUrl.split(',')[1] ?? '';
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
 function buildChapterXHTML(sec: Section, _book: Book): string {
   const body = jsonToHTML(sec.content, sec.title);
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -87,7 +142,7 @@ function buildChapterXHTML(sec: Section, _book: Book): string {
 </html>`;
 }
 
-function buildBookCSS(template: Book['template']): string {
+function buildBookCSS(template: Book['template'], paragraphIndent = true): string {
   const fonts: Record<Book['template'], string> = {
     reedsy: 'Palatino Linotype, Palatino, Georgia, serif',
     classic: 'Times New Roman, Times, serif',
@@ -103,16 +158,26 @@ function buildBookCSS(template: Book['template']): string {
     classic: '2.0',
     romance: '1.55',
   };
+  const pStyle = paragraphIndent
+    ? `p { text-indent: 1.5em; margin: 0; }
+p:first-of-type, p:first-child, h1 + p, h2 + p, h3 + p, hr + p { text-indent: 0; }`
+    : `p { text-indent: 0; margin-bottom: 0.8em; }`;
+
   return `
 body { font-family: ${fonts[template]}; font-size: ${sizes[template]}; line-height: ${lineHeights[template]}; margin: 1.5em 2em; color: #1a1a1a; }
 h1 { font-size: 2em; text-align: center; margin: 2em auto 1em; }
 h2 { font-size: 1.4em; margin: 1.5em 0 0.5em; }
-p { text-indent: 1.5em; margin: 0; }
-p:first-of-type, p:first-child { text-indent: 0; }
+${pStyle}
 blockquote { margin: 1em 2em; font-style: italic; }
 hr.scene-break { border: none; text-align: center; margin: 2em auto; }
 hr.scene-break::after { content: "* * *"; font-style: normal; }
 img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
+
+/* Epigraph */
+.epigraph-section { display: flex; flex-direction: column; justify-content: center; min-height: 80vh; padding: 10% 0; }
+.epigraph-block { margin-left: 22%; max-width: 62%; }
+.epigraph-quote { font-style: italic; text-indent: 0 !important; margin: 0 0 0.65em 0; }
+.epigraph-attribution { text-align: right; font-style: normal; font-size: 0.88em; color: #57534e; text-indent: 0 !important; margin: 0; }
 `;
 }
 
@@ -127,15 +192,20 @@ function buildContainerXML(): string {
 
 function buildOPF(book: Book): string {
   const { sections } = book;
+  const hasCover = !!book.coverImage;
+
+  const coverManifest = hasCover ? `
+    <item id="cover-image" href="Images/cover.jpg" media-type="image/jpeg" properties="cover-image"/>
+    <item id="cover-page" href="Text/cover.xhtml" media-type="application/xhtml+xml"/>` : '';
+
+  const coverMeta = hasCover ? `\n    <meta name="cover" content="cover-image"/>` : '';
+
   const manifestItems = sections
-    .map(
-      (sec) =>
-        `    <item id="${sectionId(sec)}" href="Text/${sectionFilename(sec)}" media-type="application/xhtml+xml"/>`
-    )
+    .map((sec) => `    <item id="${sectionId(sec)}" href="Text/${sectionFilename(sec)}" media-type="application/xhtml+xml"/>`)
     .join('\n');
-  const spineItems = sections
-    .map((sec) => `    <itemref idref="${sectionId(sec)}"/>`)
-    .join('\n');
+
+  const coverSpine = hasCover ? `    <itemref idref="cover-page"/>` : '';
+  const spineItems = sections.map((sec) => `    <itemref idref="${sectionId(sec)}"/>`).join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid">
@@ -144,15 +214,16 @@ function buildOPF(book: Book): string {
     <dc:creator>${escHtml(book.author || 'Unknown Author')}</dc:creator>
     <dc:language>en</dc:language>
     <dc:identifier id="bookid">urn:uuid:${book.id}</dc:identifier>
-    <meta property="dcterms:modified">${book.updatedAt.slice(0, 19).replace(' ', 'T')}Z</meta>
+    <meta property="dcterms:modified">${book.updatedAt.slice(0, 19).replace(' ', 'T')}Z</meta>${coverMeta}
   </metadata>
   <manifest>
     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
     <item id="css" href="styles/book.css" media-type="text/css"/>
-    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${coverManifest}
 ${manifestItems}
   </manifest>
   <spine toc="ncx">
+${coverSpine}
 ${spineItems}
   </spine>
 </package>`;
@@ -200,26 +271,29 @@ ${items}
 </html>`;
 }
 
-// Build epub as a Blob using the File System Access API approach
-// We encode each file and create a valid ZIP structure manually
 async function buildEPUB(book: Book): Promise<Blob> {
-  // We'll use JSZip via CDN or implement a minimal ZIP builder.
-  // Since we can't import JSZip directly, we implement a minimal ZIP.
   const files: { name: string; content: string | Uint8Array }[] = [];
 
-  // mimetype must be first and uncompressed
+  // mimetype MUST be first and uncompressed
   files.push({ name: 'mimetype', content: 'application/epub+zip' });
   files.push({ name: 'META-INF/container.xml', content: buildContainerXML() });
   files.push({ name: 'OEBPS/content.opf', content: buildOPF(book) });
   files.push({ name: 'OEBPS/toc.ncx', content: buildNCX(book) });
   files.push({ name: 'OEBPS/nav.xhtml', content: buildNavXHTML(book) });
-  files.push({ name: 'OEBPS/styles/book.css', content: buildBookCSS(book.template) });
+  files.push({ name: 'OEBPS/styles/book.css', content: buildBookCSS(book.template, book.paragraphIndent ?? true) });
 
+  // Cover
+  if (book.coverImage) {
+    files.push({ name: 'OEBPS/Text/cover.xhtml', content: buildCoverXHTML(book.coverImage) });
+    files.push({ name: 'OEBPS/Images/cover.jpg', content: dataUrlToBytes(book.coverImage) });
+  }
+
+  // Sections
   for (const sec of book.sections) {
-    files.push({
-      name: `OEBPS/Text/${sectionFilename(sec)}`,
-      content: buildChapterXHTML(sec, book),
-    });
+    const content = isEpigraphSec(sec)
+      ? buildEpigraphXHTML(sec)
+      : buildChapterXHTML(sec, book);
+    files.push({ name: `OEBPS/Text/${sectionFilename(sec)}`, content });
   }
 
   return buildZip(files);

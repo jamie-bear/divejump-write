@@ -10,10 +10,12 @@ import {
   GripVertical,
   Pencil,
   Check,
+  ImagePlus,
+  X,
 } from 'lucide-react';
 import { useBookStore } from '../store/bookStore';
 import type { Section, SectionType } from '../types';
-import { FRONT_MATTER_PRESETS, BACK_MATTER_PRESETS } from '../types';
+import { FRONT_MATTER_PRESETS, BACK_MATTER_PRESETS, COVER_SECTION_ID } from '../types';
 
 interface SectionItemProps {
   section: Section;
@@ -184,6 +186,66 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
   );
 }
 
+function CoverSection() {
+  const { book, activeSectionId, setActiveSection, setCoverImage } = useBookStore();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const isActive = activeSectionId === COVER_SECTION_ID;
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setCoverImage(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  return (
+    <div className="px-3 pb-3">
+      <div
+        className={`relative group rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+          isActive ? 'border-indigo-500' : 'border-stone-700 hover:border-stone-500'
+        }`}
+        style={{ aspectRatio: '2/3' }}
+        onClick={() => setActiveSection(COVER_SECTION_ID)}
+      >
+        {book.coverImage ? (
+          <img src={book.coverImage} className="w-full h-full object-cover" alt="Book cover" />
+        ) : (
+          <div className="w-full h-full bg-stone-800 flex flex-col items-center justify-center gap-1.5">
+            <ImagePlus size={22} className="text-stone-500" />
+            <span className="text-xs text-stone-500">Add Cover</span>
+          </div>
+        )}
+
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+            className="text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            {book.coverImage ? 'Change Cover' : 'Upload Cover'}
+          </button>
+          {book.coverImage && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setCoverImage(null); }}
+              className="text-xs text-white/70 hover:text-white flex items-center gap-1"
+            >
+              <X size={11} /> Remove
+            </button>
+          )}
+        </div>
+
+        {isActive && (
+          <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-400" />
+        )}
+      </div>
+      <p className="text-center text-xs text-stone-500 mt-1.5">Cover</p>
+      <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+    </div>
+  );
+}
+
 export default function Sidebar() {
   const { book, activeSectionId, setBookTitle, setBookAuthor } = useBookStore();
   const [editingTitle, setEditingTitle] = useState(false);
@@ -231,6 +293,10 @@ export default function Sidebar() {
 
       {/* Structure */}
       <div className="flex-1 overflow-y-auto py-3 scrollbar-thin">
+        <CoverSection />
+
+        <div className="border-t border-stone-700/30 mb-2" />
+
         <SectionGroup
           label="Front Matter"
           icon={<BookMarked size={12} />}

@@ -36,7 +36,10 @@ function createDefaultBook(): Book {
         notes: [],
       },
     ],
+    coverImage: null,
+    paragraphIndent: true,
     dailyGoal: 1000,
+    wordCountGoal: 80000,
     goalHistory: [],
     createdAt: now,
     updatedAt: now,
@@ -55,6 +58,8 @@ interface BookStore {
   setBookTitle: (title: string) => void;
   setBookAuthor: (author: string) => void;
   setTemplate: (template: Template) => void;
+  setCoverImage: (image: string | null) => void;
+  setParagraphIndent: (indent: boolean) => void;
 
   // Section management
   setActiveSection: (id: string) => void;
@@ -72,6 +77,7 @@ interface BookStore {
 
   // Goals
   setDailyGoal: (words: number) => void;
+  setWordCountGoal: (words: number) => void;
   updateDailyProgress: (words: number) => void;
   getTodayGoal: () => DailyGoal;
   getTotalWordCount: () => number;
@@ -112,6 +118,16 @@ export const useBookStore = create<BookStore>()(
       setTemplate: (template) =>
         set((s) => ({
           book: { ...s.book, template, updatedAt: new Date().toISOString() },
+        })),
+
+      setCoverImage: (image) =>
+        set((s) => ({
+          book: { ...s.book, coverImage: image, updatedAt: new Date().toISOString() },
+        })),
+
+      setParagraphIndent: (indent) =>
+        set((s) => ({
+          book: { ...s.book, paragraphIndent: indent, updatedAt: new Date().toISOString() },
         })),
 
       setActiveSection: (id) => set({ activeSectionId: id }),
@@ -259,6 +275,11 @@ export const useBookStore = create<BookStore>()(
           book: { ...s.book, dailyGoal: words },
         })),
 
+      setWordCountGoal: (words) =>
+        set((s) => ({
+          book: { ...s.book, wordCountGoal: words },
+        })),
+
       updateDailyProgress: (words) => {
         const { book } = get();
         const todayStr = today();
@@ -324,7 +345,16 @@ export const useBookStore = create<BookStore>()(
     }),
     {
       name: 'book-editor-storage',
-      version: 1,
+      version: 2,
+      migrate: (persisted, version) => {
+        const s = persisted as { book?: Partial<Book> };
+        if (version < 2 && s.book) {
+          s.book.coverImage = s.book.coverImage ?? null;
+          s.book.paragraphIndent = s.book.paragraphIndent ?? true;
+          s.book.wordCountGoal = s.book.wordCountGoal ?? 80000;
+        }
+        return persisted as BookStore;
+      },
     }
   )
 );

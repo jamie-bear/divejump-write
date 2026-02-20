@@ -26,6 +26,7 @@ interface ToolbarProps {
   editor: Editor | null;
   onInsertImage: () => void;
   onSceneBreak: () => void;
+  paragraphIndent?: boolean; // kept for future toolbar integration
 }
 
 interface ToolbarButtonProps {

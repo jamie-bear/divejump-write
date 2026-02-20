@@ -49,23 +49,23 @@ function ImageModal({ onInsert, onClose }: ImageModalProps) {
           <div>
             <label className="text-xs font-medium text-stone-600 block mb-1">From file</label>
             <input ref={fileRef} type="file" accept="image/*" onChange={handleFile}
-              className="w-full text-sm text-stone-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-medium hover:file:bg-indigo-100 cursor-pointer" />
+              className="w-full text-sm text-stone-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-dj-prussian/10 file:text-dj-prussian file:text-xs file:font-medium hover:file:bg-dj-prussian/20 cursor-pointer" />
           </div>
           <div>
             <label className="text-xs font-medium text-stone-600 block mb-1">Or from URL</label>
             <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…"
-              className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400" />
+              className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-dj-prussian focus:border-dj-prussian" />
           </div>
           <div>
             <label className="text-xs font-medium text-stone-600 block mb-1">Alt text</label>
             <input value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="Image description"
-              className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400" />
+              className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-dj-prussian focus:border-dj-prussian" />
           </div>
         </div>
         <div className="flex gap-2 mt-5 justify-end">
           <button onClick={onClose} className="px-4 py-1.5 text-sm text-stone-600 hover:bg-stone-100 rounded-lg transition-colors">Cancel</button>
           <button onClick={() => { if (url) { onInsert(url, alt); onClose(); } }} disabled={!url}
-            className="px-4 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-colors">
+            className="px-4 py-1.5 text-sm bg-dj-prussian text-white rounded-lg hover:bg-dj-teal disabled:opacity-40 transition-colors">
             Insert
           </button>
         </div>
@@ -107,7 +107,7 @@ function CoverPane() {
           </>
         ) : (
           <button onClick={() => fileRef.current?.click()}
-            className="w-full h-full flex flex-col items-center justify-center gap-3 border-2 border-dashed border-stone-300 hover:border-indigo-400 hover:bg-indigo-50/50 transition-all text-stone-400 hover:text-indigo-600">
+            className="w-full h-full flex flex-col items-center justify-center gap-3 border-2 border-dashed border-stone-300 hover:border-dj-prussian hover:bg-dj-prussian/5 transition-all text-stone-400 hover:text-dj-prussian">
             <ImagePlus size={36} />
             <span className="text-sm font-medium">Upload Cover Image</span>
             <span className="text-xs opacity-70">JPG, PNG, WebP</span>
@@ -141,7 +141,7 @@ function StatusBar({
           onClick={() => setParagraphIndent(!book.paragraphIndent)}
           title={book.paragraphIndent ? 'Switch to spaced paragraphs' : 'Switch to indented paragraphs'}
           className={`flex items-center gap-1 px-2 py-0.5 rounded transition-colors ${
-            book.paragraphIndent ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-stone-100 text-stone-400'
+            book.paragraphIndent ? 'bg-dj-prussian/15 text-dj-prussian' : 'hover:bg-stone-100 text-stone-400'
           }`}
         >
           <span className="font-mono text-xs leading-none">¶</span>
@@ -153,7 +153,7 @@ function StatusBar({
           <div className="flex items-center gap-2">
             <span>Today: {todayGoal.wordsWritten.toLocaleString()} / {book.dailyGoal.toLocaleString()}</span>
             <div className="w-24 h-1.5 bg-stone-200 rounded-full overflow-hidden">
-              <div className={`h-full rounded-full transition-all ${goalPct >= 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+              <div className={`h-full rounded-full transition-all ${goalPct >= 100 ? 'bg-dj-teal' : 'bg-dj-prussian'}`}
                 style={{ width: `${goalPct}%` }} />
             </div>
             <span className={goalPct >= 100 ? 'text-emerald-600 font-medium' : ''}>{goalPct}%</span>

@@ -38,6 +38,7 @@ function computeDropResult(
   const updated = { ...dragged, type: targetType };
   const targetSections = remaining.filter((s) => s.type === targetType);
 
+  const typeOrder: SectionType[] = ['frontmatter', 'chapter', 'backmatter'];
   let insertAbsIdx: number;
   if (targetIdx >= targetSections.length) {
     // Append after the last section of the target type
@@ -45,7 +46,19 @@ function computeDropResult(
     for (let i = remaining.length - 1; i >= 0; i--) {
       if (remaining[i].type === targetType) { lastIdx = i; break; }
     }
-    insertAbsIdx = lastIdx === -1 ? remaining.length : lastIdx + 1;
+    if (lastIdx === -1) {
+      // Empty group: insert before the first section of a later type
+      const targetTypeIdx = typeOrder.indexOf(targetType);
+      insertAbsIdx = remaining.length;
+      for (let i = 0; i < remaining.length; i++) {
+        if (typeOrder.indexOf(remaining[i].type) > targetTypeIdx) {
+          insertAbsIdx = i;
+          break;
+        }
+      }
+    } else {
+      insertAbsIdx = lastIdx + 1;
+    }
   } else {
     // Insert before the targetIdx-th section of the target type
     const beforeId = targetSections[targetIdx].id;

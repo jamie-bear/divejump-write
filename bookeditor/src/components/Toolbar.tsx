@@ -45,7 +45,7 @@ function Btn({ onClick, active, disabled, title, children }: ToolbarButtonProps)
       title={title}
       className={`p-1.5 rounded transition-colors ${
         active
-          ? 'bg-indigo-600 text-white'
+          ? 'bg-dj-prussian text-white'
           : 'text-stone-400 hover:bg-stone-200 hover:text-stone-800'
       } ${disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
     >

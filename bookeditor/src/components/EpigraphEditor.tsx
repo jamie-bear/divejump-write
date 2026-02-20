@@ -18,10 +18,23 @@ export function parseEpigraph(content: string): EpigraphData {
   return { __type: 'epigraph', quote: '', attribution: '' };
 }
 
+export function hasEpigraphContent(content: string): boolean {
+  if (!content) return false;
+  try {
+    const parsed = JSON.parse(content);
+    return parsed.__type === 'epigraph';
+  } catch {
+    return false;
+  }
+}
+
 export function isEpigraphSection(section: Section): boolean {
+  // Check both: title-based detection (new/empty epigraphs) and content-based
+  // detection (epigraphs moved via DnD that still have epigraph-format content)
   return (
-    section.type === 'frontmatter' &&
-    section.title.trim().toLowerCase() === 'epigraph'
+    (section.type === 'frontmatter' &&
+      section.title.trim().toLowerCase() === 'epigraph') ||
+    hasEpigraphContent(section.content)
   );
 }
 
@@ -64,9 +77,11 @@ export default function EpigraphEditor({ section, template }: Props) {
       <div className="max-w-2xl mx-auto my-8 px-8">
         {/* Label */}
         <div className="mb-8 text-center">
-          <div className="text-xs uppercase tracking-widest text-stone-400 mb-2">Front Matter</div>
+          <div className="text-xs uppercase tracking-widest text-stone-400 mb-2">
+            {section.type === 'chapter' ? 'Chapter' : section.type === 'frontmatter' ? 'Front Matter' : 'Back Matter'}
+          </div>
           <h1 className={`section-chapter-title template-${template}`} style={{ fontFamily: 'inherit' }}>
-            Epigraph
+            {section.title}
           </h1>
         </div>
 

@@ -171,10 +171,30 @@ export const useBookStore = create<BookStore>()(
             order: book.sections.length,
             notes: [],
           };
+          // Insert at the correct position to maintain type ordering
+          // (frontmatter → chapters → backmatter) for proper export order
+          const sections = [...book.sections];
+          const typeOrder: SectionType[] = ['frontmatter', 'chapter', 'backmatter'];
+          const typeIdx = typeOrder.indexOf(type);
+          let insertIdx = sections.length;
+          for (let i = 0; i < sections.length; i++) {
+            if (typeOrder.indexOf(sections[i].type) > typeIdx) {
+              insertIdx = i;
+              break;
+            }
+          }
+          // Place after last section of same type (within the correct group)
+          for (let i = insertIdx - 1; i >= 0; i--) {
+            if (sections[i].type === type) {
+              insertIdx = i + 1;
+              break;
+            }
+          }
+          sections.splice(insertIdx, 0, newSection);
           set((s) => ({
             ...applyBookMutation(s, (b) => ({
               ...b,
-              sections: [...b.sections, newSection],
+              sections,
               updatedAt: new Date().toISOString(),
             })),
             activeSectionId: newSection.id,
@@ -449,6 +469,10 @@ export function extractTextFromJSON(jsonStr: string): string {
   if (!jsonStr) return '';
   try {
     const parsed = JSON.parse(jsonStr);
+    // Handle epigraph content format
+    if (parsed.__type === 'epigraph') {
+      return [parsed.quote, parsed.attribution].filter(Boolean).join(' ');
+    }
     return extractText(parsed);
   } catch {
     return jsonStr;

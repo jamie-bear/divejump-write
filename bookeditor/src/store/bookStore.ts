@@ -37,6 +37,7 @@ function createDefaultBook(): Book {
     ],
     coverImage: null,
     paragraphIndent: true,
+    chapterNumbers: false,
     dailyGoal: 1000,
     wordCountGoal: 80000,
     goalHistory: [],
@@ -73,6 +74,7 @@ interface BookStore {
   setTemplate: (template: Template) => void;
   setCoverImage: (image: string | null) => void;
   setParagraphIndent: (indent: boolean) => void;
+  setChapterNumbers: (on: boolean) => void;
 
   // Section management
   setActiveSection: (id: string) => void;
@@ -146,6 +148,11 @@ export const useBookStore = create<BookStore>()(
         setParagraphIndent: (indent) =>
           set((s) =>
             applyBookMutation(s, (b) => ({ ...b, paragraphIndent: indent, updatedAt: new Date().toISOString() }))
+          ),
+
+        setChapterNumbers: (on) =>
+          set((s) =>
+            applyBookMutation(s, (b) => ({ ...b, chapterNumbers: on, updatedAt: new Date().toISOString() }))
           ),
 
         setActiveSection: (id) => set({ activeSectionId: id }),

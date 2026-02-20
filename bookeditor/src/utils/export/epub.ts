@@ -125,7 +125,8 @@ function dataUrlToBytes(dataUrl: string): Uint8Array {
   return bytes;
 }
 
-function buildChapterXHTML(sec: Section, _book: Book): string {
+function buildChapterXHTML(sec: Section, _book: Book, chapterNum?: number): string {
+  const numHtml = chapterNum != null ? `<p class="chapter-number">${chapterNum}</p>\n    ` : '';
   const body = jsonToHTML(sec.content, sec.title);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -137,7 +138,7 @@ function buildChapterXHTML(sec: Section, _book: Book): string {
 </head>
 <body epub:type="${sec.type === 'frontmatter' ? 'frontmatter' : sec.type === 'backmatter' ? 'backmatter' : 'bodymatter'}">
   <section epub:type="${sec.type === 'chapter' ? 'chapter' : sec.type}" id="${sectionId(sec)}">
-    ${body}
+    ${numHtml}${body}
   </section>
 </body>
 </html>`;
@@ -189,6 +190,9 @@ blockquote { margin: 1em 2em; font-style: italic; }
 hr.scene-break { border: none; text-align: center; margin: 2em auto; }
 hr.scene-break::after { content: "* * *"; font-style: normal; }
 img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
+
+/* Chapter number */
+.chapter-number { text-align: center; font-size: 0.85em; color: #9ca3af; letter-spacing: 0.12em; margin: 2em 0 0.2em 0; text-indent: 0 !important; }
 
 /* Epigraph */
 .epigraph-section { display: flex; flex-direction: column; justify-content: center; min-height: 80vh; padding: 10% 0; }
@@ -306,10 +310,13 @@ async function buildEPUB(book: Book): Promise<Blob> {
   }
 
   // Sections
+  let chapterCount = 0;
   for (const sec of book.sections) {
+    if (sec.type === 'chapter') chapterCount++;
+    const num = (book.chapterNumbers ?? false) && sec.type === 'chapter' ? chapterCount : undefined;
     const content = isEpigraphSec(sec)
       ? buildEpigraphXHTML(sec)
-      : buildChapterXHTML(sec, book);
+      : buildChapterXHTML(sec, book, num);
     files.push({ name: `OEBPS/Text/${sectionFilename(sec)}`, content });
   }
 

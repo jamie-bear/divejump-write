@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import {
   StickyNote,
   Target,
-  Download,
+  Upload,
   Palette,
   BookOpen,
   LayoutGrid,
@@ -43,9 +43,6 @@ function TopBar() {
       <div className="flex items-center gap-2 mr-4">
         <BookOpen size={20} className="text-dj-prussian" />
         <span className="font-bold text-stone-800 tracking-tight text-base">DiveJump</span>
-        <span className="text-xs bg-dj-prussian/10 text-dj-prussian rounded px-1.5 py-0.5 font-medium">
-          Book Editor
-        </span>
       </div>
 
       <div className="h-5 w-px bg-stone-200" />
@@ -112,7 +109,7 @@ function TopBar() {
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-dj-prussian text-white rounded-lg hover:bg-dj-teal transition-colors shadow-sm"
           title="Export Book"
         >
-          <Download size={14} />
+          <Upload size={14} />
           Export
         </button>
       </div>

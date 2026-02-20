@@ -1,0 +1,8 @@
+{
+  "buildCommand": "cd bookeditor && npm install && npm run build",
+  "outputDirectory": "bookeditor/dist",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

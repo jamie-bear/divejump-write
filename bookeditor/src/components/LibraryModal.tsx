@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { X, Plus, Trash2, BookOpen, Clock, Hash, Upload } from 'lucide-react';
+import { X, Plus, Trash2, BookOpen, Clock, Hash, Download } from 'lucide-react';
 import { useBookStore, countWords, extractTextFromJSON } from '../store/bookStore';
 import { importFromFile } from '../utils/export/json';
 import type { Book } from '../types';
@@ -150,7 +150,7 @@ export default function LibraryModal() {
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-dj-prussian border border-dj-prussian/30 bg-dj-prussian/5 rounded-lg hover:bg-dj-prussian/10 transition-colors"
               title="Import .djbook or .djlib file"
             >
-              <Upload size={13} />
+              <Download size={13} />
               Import
             </button>
             <button

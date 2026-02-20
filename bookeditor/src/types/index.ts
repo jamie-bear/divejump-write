@@ -35,6 +35,7 @@ export interface Book {
   sections: Section[];
   coverImage: string | null;    // base64 data URL
   paragraphIndent: boolean;     // true = first-line indent, false = spaced
+  chapterNumbers?: boolean;     // show chapter number above chapter titles
   dailyGoal: number;
   wordCountGoal: number;        // total manuscript target, e.g. 80000
   goalHistory: DailyGoal[];

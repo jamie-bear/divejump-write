@@ -124,10 +124,10 @@ function StatusBar({
   wordCount, book, getTodayGoal,
 }: {
   wordCount: number;
-  book: { dailyGoal: number; paragraphIndent: boolean };
+  book: { dailyGoal: number; paragraphIndent: boolean; chapterNumbers?: boolean };
   getTodayGoal: () => { wordsWritten: number };
 }) {
-  const { setParagraphIndent } = useBookStore();
+  const { setParagraphIndent, setChapterNumbers } = useBookStore();
   const todayGoal = getTodayGoal();
   const goalPct = book.dailyGoal > 0
     ? Math.min(100, Math.round((todayGoal.wordsWritten / book.dailyGoal) * 100))
@@ -146,6 +146,16 @@ function StatusBar({
         >
           <span className="font-mono text-xs leading-none">¶</span>
           <span>{book.paragraphIndent ? 'Indented' : 'Spaced'}</span>
+        </button>
+        <button
+          onClick={() => setChapterNumbers(!(book.chapterNumbers ?? false))}
+          title={book.chapterNumbers ? 'Hide chapter numbers' : 'Show chapter numbers above titles'}
+          className={`flex items-center gap-1 px-2 py-0.5 rounded transition-colors ${
+            book.chapterNumbers ? 'bg-dj-prussian/15 text-dj-prussian' : 'hover:bg-stone-100 text-stone-400'
+          }`}
+        >
+          <span className="font-mono text-xs leading-none">#</span>
+          <span>Ch. numbers</span>
         </button>
       </div>
       <div className="flex items-center gap-3">
@@ -232,6 +242,9 @@ export default function EditorPane() {
 
   const wordCount = activeSection ? countWords(extractTextFromJSON(activeSection.content)) : 0;
   const indentClass = book.paragraphIndent ? 'indent-on' : 'indent-off';
+  const chapterNum = (book.chapterNumbers ?? false) && activeSection.type === 'chapter'
+    ? book.sections.filter((s) => s.type === 'chapter').findIndex((s) => s.id === activeSection.id) + 1
+    : null;
 
   return (
     <div className={`flex-1 flex flex-col min-w-0 bg-stone-100 ${templateClasses[book.template]}`}>
@@ -245,6 +258,9 @@ export default function EditorPane() {
               {activeSection.type === 'chapter' ? 'Chapter'
                 : activeSection.type === 'frontmatter' ? 'Front Matter' : 'Back Matter'}
             </div>
+            {chapterNum !== null && (
+              <div className="chapter-number-display">{chapterNum}</div>
+            )}
             <h1 className="section-chapter-title">{activeSection.title}</h1>
           </div>
 

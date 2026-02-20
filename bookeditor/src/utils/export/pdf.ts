@@ -18,7 +18,7 @@ function isEpigraphSec(sec: { type: string; title: string; content: string }): b
   try { return JSON.parse(sec.content)?.__type === 'epigraph'; } catch { return false; }
 }
 
-function sectionToHTML(sec: Book['sections'][number]): string {
+function sectionToHTML(sec: Book['sections'][number], chapterNum?: number): string {
   if (isEpigraphSec(sec)) {
     const data = parseEpigraph(sec.content);
     return `
@@ -29,7 +29,8 @@ function sectionToHTML(sec: Book['sections'][number]): string {
         </div>
       </section>`;
   }
-  return `<section class="chapter">${jsonToHTML(sec.content, sec.title)}</section>`;
+  const numHtml = chapterNum != null ? `<p class="chapter-number">${chapterNum}</p>` : '';
+  return `<section class="chapter">${numHtml}${jsonToHTML(sec.content, sec.title)}</section>`;
 }
 
 function esc(str: string): string {
@@ -45,7 +46,12 @@ export function exportPDF(book: Book): void {
     ? `<div class="cover-page"><img src="${book.coverImage}" class="cover-img" alt="Cover"/></div>`
     : '';
 
-  const sectionsHTML = book.sections.map(sectionToHTML).join('\n');
+  let chapterCount = 0;
+  const sectionsHTML = book.sections.map((sec) => {
+    if (sec.type === 'chapter') chapterCount++;
+    const num = (book.chapterNumbers ?? false) && sec.type === 'chapter' ? chapterCount : undefined;
+    return sectionToHTML(sec, num);
+  }).join('\n');
 
   const fullHTML = `<!DOCTYPE html>
 <html lang="en">

@@ -226,6 +226,14 @@
   padding: 0;
 }
 
+/* ---- Chapter number display (above title in editor) ---- */
+.chapter-number-display {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.2em;
+}
+
 /* ============================================================
    Paragraph indent toggle
    ============================================================ */

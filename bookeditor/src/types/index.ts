@@ -15,10 +15,10 @@ export interface Section {
   type: SectionType;
   title: string;
   subtitle?: string;
-  content: string; // Tiptap JSON string
+  // Tiptap JSON string OR epigraph JSON: { __type: 'epigraph', quote: string, attribution: string }
+  content: string;
   order: number;
   notes: Note[];
-  wordCountOverride?: number;
 }
 
 export interface DailyGoal {
@@ -33,21 +33,17 @@ export interface Book {
   author: string;
   template: Template;
   sections: Section[];
-  dailyGoal: number; // words per day target
+  coverImage: string | null;    // base64 data URL
+  paragraphIndent: boolean;     // true = first-line indent, false = spaced
+  dailyGoal: number;
+  wordCountGoal: number;        // total manuscript target, e.g. 80000
   goalHistory: DailyGoal[];
   createdAt: string;
   updatedAt: string;
 }
 
-export interface BookState {
-  book: Book;
-  activeSectionId: string | null;
-  showNotesPanel: boolean;
-  showGoalPanel: boolean;
-  showExportModal: boolean;
-  showTemplateModal: boolean;
-  isDirty: boolean;
-}
+// Special pseudo-section ID used to display the cover editor
+export const COVER_SECTION_ID = '__cover__';
 
 export const FRONT_MATTER_PRESETS: { title: string; subtitle?: string }[] = [
   { title: 'Half Title Page' },

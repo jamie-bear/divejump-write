@@ -226,6 +226,132 @@
 }
 
 /* ============================================================
+   Paragraph indent toggle
+   ============================================================ */
+
+/* indent-on: classic novel indentation (already the default from template CSS,
+   but we set it explicitly so it wins over indent-off) */
+.editor-paper.indent-on p {
+  text-indent: 1.5em;
+  margin-bottom: 0;
+}
+.editor-paper.indent-on h1 + p,
+.editor-paper.indent-on h2 + p,
+.editor-paper.indent-on h3 + p,
+.editor-paper.indent-on hr + p,
+.editor-paper.indent-on p:first-child {
+  text-indent: 0;
+}
+
+/* indent-off: modern blog-style with spacing between paragraphs */
+.editor-paper.indent-off p {
+  text-indent: 0 !important;
+  margin-bottom: 0.8em;
+}
+
+/* ============================================================
+   Epigraph layout
+   ============================================================ */
+
+.epigraph-paper {
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 5rem 3rem;
+  /* no standard px-12 py-10, the paper adds its own */
+}
+
+.epigraph-block {
+  margin-left: 22%;
+  max-width: 62%;
+}
+
+.epigraph-quote {
+  font-style: italic;
+  text-indent: 0 !important;
+  line-height: 1.65;
+  margin: 0 0 0.65em 0;
+  color: #1c1917;
+}
+
+.epigraph-attribution {
+  text-align: right;
+  font-style: normal;
+  font-size: 0.88em;
+  color: #57534e;
+  text-indent: 0 !important;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* Interactive states when clicking to edit */
+.epigraph-clickable {
+  cursor: text;
+  border-radius: 2px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  transition: background 0.15s;
+}
+.epigraph-clickable:hover {
+  background: #f5f5f4;
+  outline: 1px dashed #d4d4d4;
+}
+
+.epigraph-placeholder {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Inline textarea/input when editing epigraph fields */
+.epigraph-textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #a78bfa;
+  outline: none;
+  resize: none;
+  font-style: italic;
+  line-height: 1.65;
+  color: #1c1917;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0;
+  margin: 0;
+}
+
+.epigraph-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #a78bfa;
+  outline: none;
+  text-align: right;
+  font-size: 0.88em;
+  color: #57534e;
+  font-family: inherit;
+  padding: 0;
+  margin: 0;
+}
+
+.epigraph-hint {
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.7rem;
+  color: #d4d4d4;
+  pointer-events: none;
+  font-style: italic;
+}
+
+/* Epigraph paper needs relative positioning for the hint */
+.epigraph-paper {
+  position: relative;
+}
+
+/* ============================================================
    Tiptap focus ring
    ============================================================ */
 .ProseMirror-focused {

@@ -1,0 +1,233 @@
+/* ============================================================
+   Editor styles — Tiptap prose and template theming
+   ============================================================ */
+
+/* ---- Base editor container ---- */
+.prose-editor {
+  min-height: 400px;
+  outline: none;
+  caret-color: #6366f1;
+}
+
+/* ---- Placeholder ---- */
+.prose-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+}
+
+/* ---- Paragraph base ---- */
+.prose-editor p {
+  margin: 0 0 0 0;
+  line-height: inherit;
+}
+
+/* ---- Scene break (horizontal rule) ---- */
+.prose-editor hr.scene-break,
+.prose-editor hr {
+  border: none;
+  border-top: none;
+  text-align: center;
+  margin: 2em 0;
+  position: relative;
+  height: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 1.1em;
+  letter-spacing: 0.5em;
+}
+
+.prose-editor hr::after {
+  content: '* * *';
+  display: block;
+  color: #9ca3af;
+}
+
+/* ---- Headings ---- */
+.prose-editor h1 {
+  font-size: 1.7em;
+  font-weight: 700;
+  margin: 0.5em 0 0.75em;
+  line-height: 1.2;
+}
+
+.prose-editor h2 {
+  font-size: 1.3em;
+  font-weight: 600;
+  margin: 1.5em 0 0.5em;
+}
+
+.prose-editor h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 1.2em 0 0.4em;
+}
+
+/* ---- Blockquote ---- */
+.prose-editor blockquote {
+  border-left: 3px solid #e5e7eb;
+  padding-left: 1.2em;
+  margin: 1em 0;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* ---- Lists ---- */
+.prose-editor ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 0.75em 0;
+}
+
+.prose-editor ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin: 0.75em 0;
+}
+
+.prose-editor li {
+  margin: 0.25em 0;
+}
+
+.prose-editor li p {
+  margin: 0;
+}
+
+/* ---- Marks ---- */
+.prose-editor strong { font-weight: 700; }
+.prose-editor em { font-style: italic; }
+.prose-editor u { text-decoration: underline; }
+.prose-editor s { text-decoration: line-through; }
+.prose-editor mark { background: #fef08a; border-radius: 2px; padding: 0 2px; }
+
+/* ---- Images ---- */
+.prose-editor img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5em auto;
+  border-radius: 4px;
+}
+
+.prose-editor img.ProseMirror-selectednode {
+  outline: 2px solid #6366f1;
+  border-radius: 4px;
+}
+
+/* ---- Text align ---- */
+.prose-editor [style*="text-align: center"],
+.prose-editor .text-center { text-align: center; }
+.prose-editor [style*="text-align: right"],
+.prose-editor .text-right { text-align: right; }
+.prose-editor [style*="text-align: justify"],
+.prose-editor .text-justify { text-align: justify; }
+
+/* ============================================================
+   Template theming
+   ============================================================ */
+
+/* ---- Reedsy template ---- */
+.template-reedsy .editor-paper {
+  font-family: "Palatino Linotype", Palatino, Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: #1c1917;
+}
+
+.template-reedsy .editor-paper p {
+  text-indent: 1.5em;
+}
+
+.template-reedsy .editor-paper p:first-child,
+.template-reedsy .editor-paper h1 + p,
+.template-reedsy .editor-paper h2 + p,
+.template-reedsy .editor-paper h3 + p,
+.template-reedsy .editor-paper hr + p {
+  text-indent: 0;
+}
+
+.template-reedsy .section-chapter-title {
+  font-family: "Palatino Linotype", Palatino, Georgia, serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #1c1917;
+}
+
+/* ---- Classic template ---- */
+.template-classic .editor-paper {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 1.1rem;
+  line-height: 2;
+  color: #111827;
+}
+
+.template-classic .editor-paper p {
+  text-indent: 2em;
+}
+
+.template-classic .editor-paper p:first-child,
+.template-classic .editor-paper h1 + p,
+.template-classic .editor-paper h2 + p,
+.template-classic .editor-paper hr + p {
+  text-indent: 0;
+}
+
+.template-classic .section-chapter-title {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #111827;
+}
+
+/* ---- Romance template ---- */
+.template-romance .editor-paper {
+  font-family: Garamond, "EB Garamond", Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #1c1917;
+}
+
+.template-romance .editor-paper p {
+  text-indent: 1.25em;
+}
+
+.template-romance .editor-paper p:first-child,
+.template-romance .editor-paper h1 + p,
+.template-romance .editor-paper h2 + p,
+.template-romance .editor-paper hr + p {
+  text-indent: 0;
+}
+
+.template-romance .section-chapter-title {
+  font-family: Garamond, "EB Garamond", Georgia, serif;
+  font-size: 2.1rem;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: #1c1917;
+}
+
+.template-romance .editor-paper blockquote {
+  border-left-color: #d4a5a5;
+  color: #6b4c4c;
+}
+
+/* ---- Chapter header block ---- */
+.editor-section-header .section-chapter-title {
+  margin: 0;
+  padding: 0;
+}
+
+/* ============================================================
+   Tiptap focus ring
+   ============================================================ */
+.ProseMirror-focused {
+  outline: none;
+}

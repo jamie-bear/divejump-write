@@ -13,8 +13,9 @@ function templateMargins(template: Book['template']): string {
   return '0.9in 1.1in';
 }
 
-function isEpigraphSec(sec: { type: string; title: string }): boolean {
-  return sec.type === 'frontmatter' && sec.title.trim().toLowerCase() === 'epigraph';
+function isEpigraphSec(sec: { type: string; title: string; content: string }): boolean {
+  if (sec.type === 'frontmatter' && sec.title.trim().toLowerCase() === 'epigraph') return true;
+  try { return JSON.parse(sec.content)?.__type === 'epigraph'; } catch { return false; }
 }
 
 function sectionToHTML(sec: Book['sections'][number]): string {

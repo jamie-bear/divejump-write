@@ -71,7 +71,8 @@ function sectionFilename(sec: Section): string {
 }
 
 function isEpigraphSec(sec: Section): boolean {
-  return sec.type === 'frontmatter' && sec.title.trim().toLowerCase() === 'epigraph';
+  if (sec.type === 'frontmatter' && sec.title.trim().toLowerCase() === 'epigraph') return true;
+  try { return JSON.parse(sec.content)?.__type === 'epigraph'; } catch { return false; }
 }
 
 function buildEpigraphXHTML(sec: Section): string {

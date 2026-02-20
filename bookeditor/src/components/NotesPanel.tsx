@@ -65,7 +65,7 @@ function NoteCard({ note, sectionId }: NoteCardProps) {
           <div className="flex gap-1.5 mt-1">
             <button
               onClick={handleSave}
-              className="text-xs px-2 py-0.5 bg-stone-700 text-white rounded hover:bg-stone-800 transition-colors"
+              className="text-xs px-2 py-0.5 bg-dj-prussian text-white rounded hover:bg-dj-teal transition-colors"
             >
               Save
             </button>
@@ -112,7 +112,7 @@ export default function NotesPanel() {
     <aside className="w-64 flex-shrink-0 bg-stone-50 border-l border-stone-200 flex flex-col h-screen overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
         <div className="flex items-center gap-2">
-          <StickyNote size={15} className="text-amber-500" />
+          <StickyNote size={15} className="text-dj-red" />
           <span className="text-sm font-semibold text-stone-700">Notes</span>
           <span className="text-xs bg-stone-200 text-stone-600 rounded-full px-1.5 py-0.5">
             {activeSection.notes.length}
@@ -141,7 +141,7 @@ export default function NotesPanel() {
         </div>
         <button
           onClick={handleAddNote}
-          className="ml-auto flex items-center gap-1 text-xs text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded-md transition-colors"
+          className="ml-auto flex items-center gap-1 text-xs text-dj-prussian hover:bg-dj-prussian/10 px-2 py-1 rounded-md transition-colors"
         >
           <Plus size={12} />
           Add Note

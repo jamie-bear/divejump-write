@@ -6,7 +6,7 @@
 .prose-editor {
   min-height: 400px;
   outline: none;
-  caret-color: #6366f1;
+  caret-color: #3A6E82;
 }
 
 /* ---- Placeholder ---- */
@@ -130,11 +130,11 @@
    Template theming
    ============================================================ */
 
-/* ---- Reedsy template ---- */
+/* ---- Standard template (was Reedsy) ---- */
 .template-reedsy .editor-paper {
-  font-family: "Palatino Linotype", Palatino, Georgia, serif;
-  font-size: 1.05rem;
-  line-height: 1.65;
+  font-family: Merriweather, Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.7;
   color: #1c1917;
 }
 
@@ -151,10 +151,11 @@
 }
 
 .template-reedsy .section-chapter-title {
-  font-family: "Palatino Linotype", Palatino, Georgia, serif;
-  font-size: 2rem;
+  font-family: Lato, sans-serif;
+  font-size: 1.9rem;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: #1c1917;
 }
 
@@ -308,7 +309,7 @@
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1.5px solid #a78bfa;
+  border-bottom: 1.5px solid #3A6E82;
   outline: none;
   resize: none;
   font-style: italic;
@@ -324,7 +325,7 @@
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1.5px solid #a78bfa;
+  border-bottom: 1.5px solid #3A6E82;
   outline: none;
   text-align: right;
   font-size: 0.88em;

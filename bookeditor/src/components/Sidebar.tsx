@@ -66,11 +66,11 @@ function SectionItem({
       onDragEnd={onDragEnd}
       onClick={onSelect}
       className={`group flex items-center gap-1.5 px-3 py-1.5 cursor-pointer rounded-md mx-1 transition-colors select-none ${
-        isDragOver ? 'ring-2 ring-indigo-400 ring-inset' : ''
+        isDragOver ? 'ring-2 ring-dj-mint ring-inset' : ''
       } ${
         isActive
-          ? 'bg-indigo-600 text-white'
-          : 'text-stone-300 hover:bg-stone-700 hover:text-white'
+          ? 'bg-dj-prussian text-white'
+          : 'text-stone-300 hover:bg-white/10 hover:text-white'
       }`}
     >
       <GripVertical size={13} className="opacity-40 flex-shrink-0 cursor-grab active:cursor-grabbing" />
@@ -110,7 +110,7 @@ function SectionItem({
         )}
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="p-0.5 hover:bg-red-500/60 rounded"
+          className="p-0.5 hover:bg-dj-red/40 rounded"
         >
           <Trash2 size={12} />
         </button>
@@ -159,7 +159,6 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
     const [moved] = reordered.splice(from, 1);
     reordered.splice(toIdx, 0, moved);
 
-    // Rebuild the full section list preserving sections of other types
     let gIdx = 0;
     const result = book.sections.map((sec) =>
       sec.type === type ? reordered[gIdx++] : sec
@@ -171,11 +170,11 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
     <div className="mb-1">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-stone-400 hover:text-stone-200 transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-stone-400 hover:text-dj-mint transition-colors"
       >
         {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
         <span className="flex items-center gap-1.5">{icon}{label}</span>
-        <span className="ml-auto text-stone-500">({sections.length})</span>
+        <span className="ml-auto text-stone-600">({sections.length})</span>
       </button>
 
       {open && (
@@ -200,27 +199,27 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
           <div className="relative mx-1 mt-1">
             <button
               onClick={() => presets ? setShowAddMenu(!showAddMenu) : handleAdd()}
-              className="w-full flex items-center gap-1.5 px-3 py-1 text-xs text-stone-500 hover:text-indigo-400 hover:bg-stone-700/50 rounded-md transition-colors"
+              className="w-full flex items-center gap-1.5 px-3 py-1 text-xs text-stone-500 hover:text-dj-mint hover:bg-white/8 rounded-md transition-colors"
             >
               <Plus size={12} />
               Add {type === 'chapter' ? 'Chapter' : type === 'frontmatter' ? 'Front Matter' : 'Back Matter'}
             </button>
 
             {showAddMenu && presets && (
-              <div className="absolute left-0 top-full mt-1 z-50 bg-stone-800 border border-stone-600 rounded-lg shadow-xl py-1 min-w-48">
+              <div className="absolute left-0 top-full mt-1 z-50 bg-dj-maroon border border-white/15 rounded-lg shadow-xl py-1 min-w-48">
                 {presets.map((p) => (
                   <button
                     key={p.title}
                     onClick={() => handleAdd(p.title)}
-                    className="w-full text-left px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700 hover:text-white transition-colors"
+                    className="w-full text-left px-3 py-1.5 text-xs text-stone-300 hover:bg-white/10 hover:text-white transition-colors"
                   >
                     {p.title}
                   </button>
                 ))}
-                <div className="border-t border-stone-600 mt-1 pt-1">
+                <div className="border-t border-white/10 mt-1 pt-1">
                   <button
                     onClick={() => handleAdd()}
-                    className="w-full text-left px-3 py-1.5 text-xs text-stone-400 hover:bg-stone-700 hover:text-white transition-colors"
+                    className="w-full text-left px-3 py-1.5 text-xs text-stone-400 hover:bg-white/10 hover:text-white transition-colors"
                   >
                     Custom...
                   </button>
@@ -254,12 +253,12 @@ function CoverSection() {
         onClick={() => setActiveSection(COVER_SECTION_ID)}
         className={`group flex items-center gap-1.5 px-3 py-1.5 cursor-pointer rounded-md transition-colors ${
           isActive
-            ? 'bg-indigo-600 text-white'
-            : 'text-stone-300 hover:bg-stone-700 hover:text-white'
+            ? 'bg-dj-prussian text-white'
+            : 'text-stone-300 hover:bg-white/10 hover:text-white'
         }`}
       >
         {/* Small cover thumbnail */}
-        <div className="w-5 h-7 flex-shrink-0 rounded-sm overflow-hidden bg-stone-700 border border-stone-600/60">
+        <div className="w-5 h-7 flex-shrink-0 rounded-sm overflow-hidden bg-white/10 border border-white/15">
           {book.coverImage ? (
             <img src={book.coverImage} alt="Cover" className="w-full h-full object-cover" />
           ) : (
@@ -272,7 +271,7 @@ function CoverSection() {
         <button
           onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
           className={`opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity ${
-            isActive ? 'hover:bg-white/20' : 'hover:bg-stone-600'
+            isActive ? 'hover:bg-white/20' : 'hover:bg-white/15'
           }`}
           title="Upload cover image"
         >
@@ -294,11 +293,11 @@ export default function Sidebar() {
   const backMatter = book.sections.filter((s) => s.type === 'backmatter');
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-stone-900 border-r border-stone-700/50 flex flex-col h-screen overflow-hidden">
+    <aside className="w-64 flex-shrink-0 bg-dj-maroon border-r border-white/10 flex flex-col h-screen overflow-hidden">
       {/* Book header */}
-      <div className="px-4 py-5 border-b border-stone-700/50">
+      <div className="px-4 py-5 border-b border-white/10">
         <div className="flex items-center gap-2 mb-3">
-          <BookOpen size={18} className="text-indigo-400 flex-shrink-0" />
+          <BookOpen size={18} className="text-dj-mint flex-shrink-0" />
           <span className="text-xs font-semibold uppercase tracking-widest text-stone-400">Manuscript</span>
         </div>
 
@@ -309,12 +308,12 @@ export default function Sidebar() {
             onChange={(e) => setTitleVal(e.target.value)}
             onBlur={() => { setBookTitle(titleVal || 'Untitled Book'); setEditingTitle(false); }}
             onKeyDown={(e) => { if (e.key === 'Enter') { setBookTitle(titleVal || 'Untitled Book'); setEditingTitle(false); } }}
-            className="w-full bg-stone-800 text-white text-sm font-semibold rounded px-2 py-1 border border-stone-600 outline-none focus:border-indigo-500"
+            className="w-full bg-white/10 text-white text-sm font-semibold rounded px-2 py-1 border border-white/20 outline-none focus:border-dj-prussian"
           />
         ) : (
           <button
             onClick={() => { setTitleVal(book.title); setEditingTitle(true); }}
-            className="w-full text-left text-sm font-semibold text-white hover:text-indigo-300 transition-colors truncate"
+            className="w-full text-left text-sm font-semibold text-white hover:text-dj-mint transition-colors truncate"
             title={book.title}
           >
             {book.title}
@@ -325,7 +324,7 @@ export default function Sidebar() {
           value={book.author}
           onChange={(e) => setBookAuthor(e.target.value)}
           placeholder="Author name"
-          className="mt-1 w-full bg-transparent text-xs text-stone-400 placeholder-stone-600 border-b border-transparent focus:border-stone-600 outline-none py-0.5 transition-colors"
+          className="mt-1 w-full bg-transparent text-xs text-stone-400 placeholder-stone-600 border-b border-transparent focus:border-white/30 outline-none py-0.5 transition-colors"
         />
       </div>
 
@@ -333,7 +332,7 @@ export default function Sidebar() {
       <div className="flex-1 overflow-y-auto py-3 scrollbar-thin">
         <CoverSection />
 
-        <div className="border-t border-stone-700/30 mb-2" />
+        <div className="border-t border-white/10 mb-2" />
 
         <SectionGroup
           label="Front Matter"
@@ -344,7 +343,7 @@ export default function Sidebar() {
           defaultOpen={frontMatter.length > 0}
         />
 
-        <div className="border-t border-stone-700/30 my-1" />
+        <div className="border-t border-white/10 my-1" />
 
         <SectionGroup
           label="Chapters"
@@ -355,7 +354,7 @@ export default function Sidebar() {
           defaultOpen={true}
         />
 
-        <div className="border-t border-stone-700/30 my-1" />
+        <div className="border-t border-white/10 my-1" />
 
         <SectionGroup
           label="Back Matter"
@@ -368,7 +367,7 @@ export default function Sidebar() {
       </div>
 
       {/* Footer stats */}
-      <div className="px-4 py-3 border-t border-stone-700/50 text-xs text-stone-500">
+      <div className="px-4 py-3 border-t border-white/10 text-xs text-stone-500">
         <div className="flex justify-between">
           <span>{book.sections.length} sections</span>
           <span>Last saved {formatRelativeTime(book.updatedAt)}</span>

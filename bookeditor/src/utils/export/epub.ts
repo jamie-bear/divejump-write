@@ -144,7 +144,7 @@ function buildChapterXHTML(sec: Section, _book: Book): string {
 
 function buildBookCSS(template: Book['template'], paragraphIndent = true): string {
   const fonts: Record<Book['template'], string> = {
-    reedsy: 'Palatino Linotype, Palatino, Georgia, serif',
+    reedsy: 'Merriweather, Georgia, serif',
     classic: 'Times New Roman, Times, serif',
     romance: 'Garamond, EB Garamond, Georgia, serif',
   };

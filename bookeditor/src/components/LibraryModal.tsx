@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { X, Plus, Trash2, BookOpen, Clock, Hash } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { X, Plus, Trash2, BookOpen, Clock, Hash, Upload } from 'lucide-react';
 import { useBookStore, countWords, extractTextFromJSON } from '../store/bookStore';
+import { importBookFromJSON } from '../utils/export/json';
 import type { Book } from '../types';
 
 function bookWordCount(book: Book): number {
@@ -19,7 +20,7 @@ function formatRelative(iso: string): string {
 }
 
 const TEMPLATE_LABEL: Record<string, string> = {
-  reedsy: 'Reedsy',
+  reedsy: 'Standard',
   classic: 'Classic',
   romance: 'Romance',
 };
@@ -39,7 +40,7 @@ function BookCard({ book, isCurrent, onOpen, onDelete }: BookCardProps) {
     <div
       className={`group relative bg-white rounded-xl border-2 transition-all cursor-pointer flex flex-col ${
         isCurrent
-          ? 'border-indigo-500 shadow-lg'
+          ? 'border-dj-prussian shadow-lg'
           : 'border-stone-200 hover:border-stone-300 hover:shadow-md'
       }`}
       onClick={onOpen}
@@ -49,8 +50,8 @@ function BookCard({ book, isCurrent, onOpen, onDelete }: BookCardProps) {
         {book.coverImage ? (
           <img src={book.coverImage} alt="Cover" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-stone-200">
-            <BookOpen size={32} className="text-indigo-300" />
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dj-prussian/10 to-stone-200">
+            <BookOpen size={32} className="text-dj-prussian/40" />
           </div>
         )}
       </div>
@@ -107,7 +108,7 @@ function BookCard({ book, isCurrent, onOpen, onDelete }: BookCardProps) {
 
       {/* Current badge */}
       {isCurrent && (
-        <div className="absolute top-2 left-2 bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+        <div className="absolute top-2 left-2 bg-dj-prussian text-white text-xs px-1.5 py-0.5 rounded font-medium">
           Open
         </div>
       )}
@@ -116,7 +117,22 @@ function BookCard({ book, isCurrent, onOpen, onDelete }: BookCardProps) {
 }
 
 export default function LibraryModal() {
-  const { allBooks, currentBookId, openBook, createBook, deleteBook, closeLibrary } = useBookStore();
+  const { allBooks, currentBookId, openBook, createBook, deleteBook, closeLibrary, importBook } = useBookStore();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportError(null);
+    try {
+      const book = await importBookFromJSON(file);
+      importBook(book);
+    } catch {
+      setImportError('Could not read file. Make sure it is a valid .djbook file.');
+    }
+    e.target.value = '';
+  };
 
   return (
     <div
@@ -130,7 +146,7 @@ export default function LibraryModal() {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-white rounded-t-2xl flex-shrink-0">
           <div className="flex items-center gap-2">
-            <BookOpen size={18} className="text-indigo-600" />
+            <BookOpen size={18} className="text-dj-prussian" />
             <h2 className="text-base font-semibold text-stone-800">My Books</h2>
             <span className="text-xs bg-stone-100 text-stone-500 rounded-full px-2 py-0.5 font-medium">
               {allBooks.length}
@@ -138,8 +154,16 @@ export default function LibraryModal() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-dj-prussian border border-dj-prussian/30 bg-dj-prussian/5 rounded-lg hover:bg-dj-prussian/10 transition-colors"
+              title="Import a .djbook file"
+            >
+              <Upload size={13} />
+              Import
+            </button>
+            <button
               onClick={createBook}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-dj-prussian text-white rounded-lg hover:bg-dj-teal transition-colors"
             >
               <Plus size={13} />
               New Book
@@ -153,6 +177,13 @@ export default function LibraryModal() {
             </button>
           </div>
         </div>
+
+        {/* Error */}
+        {importError && (
+          <div className="mx-6 mt-4 px-3 py-2 bg-red-50 text-red-600 text-xs rounded-lg">
+            {importError}
+          </div>
+        )}
 
         {/* Book grid */}
         <div className="flex-1 overflow-y-auto p-6">
@@ -175,6 +206,14 @@ export default function LibraryModal() {
             </div>
           )}
         </div>
+
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".djbook,.json"
+          onChange={handleImport}
+          className="hidden"
+        />
       </div>
     </div>
   );

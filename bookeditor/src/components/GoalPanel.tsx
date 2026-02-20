@@ -14,11 +14,11 @@ function GoalRing({ pct }: { pct: number }) {
     <svg width="100" height="100" viewBox="0 0 100 100" className="mx-auto">
       <circle cx="50" cy="50" r={r} fill="none" stroke="#e7e5e4" strokeWidth="8" />
       <circle cx="50" cy="50" r={r} fill="none"
-        stroke={done ? '#10b981' : '#6366f1'} strokeWidth="8"
+        stroke={done ? '#2E5747' : '#3A6E82'} strokeWidth="8"
         strokeDasharray={circ} strokeDashoffset={offset}
         strokeLinecap="round" transform="rotate(-90 50 50)"
         style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
-      <text x="50" y="46" textAnchor="middle" fontSize="18" fontWeight="700" fill={done ? '#059669' : '#374151'}>
+      <text x="50" y="46" textAnchor="middle" fontSize="18" fontWeight="700" fill={done ? '#2E5747' : '#374151'}>
         {pct}%
       </text>
       <text x="50" y="62" textAnchor="middle" fontSize="9" fill="#9ca3af">
@@ -44,18 +44,18 @@ function ManuscriptArc({ written, goal }: { written: number; goal: number }) {
         <circle cx="65" cy="65" r={r} fill="none" stroke="#f5f5f4" strokeWidth="10" />
         {/* Progress */}
         <circle cx="65" cy="65" r={r} fill="none"
-          stroke={done ? '#10b981' : '#818cf8'} strokeWidth="10"
+          stroke={done ? '#2E5747' : '#3A6E82'} strokeWidth="10"
           strokeDasharray={circ} strokeDashoffset={offset}
           strokeLinecap="round" transform="rotate(-90 65 65)"
           style={{ transition: 'stroke-dashoffset 0.6s ease' }} />
         {/* Center text */}
-        <text x="65" y="58" textAnchor="middle" fontSize="13" fontWeight="700" fill={done ? '#059669' : '#1c1917'}>
+        <text x="65" y="58" textAnchor="middle" fontSize="13" fontWeight="700" fill={done ? '#2E5747' : '#1c1917'}>
           {written.toLocaleString()}
         </text>
         <text x="65" y="72" textAnchor="middle" fontSize="9" fill="#a8a29e">
           of {goal.toLocaleString()}
         </text>
-        <text x="65" y="84" textAnchor="middle" fontSize="9" fill={done ? '#059669' : '#a8a29e'}>
+        <text x="65" y="84" textAnchor="middle" fontSize="9" fill={done ? '#2E5747' : '#a8a29e'}>
           {done ? '✓ Done!' : 'words'}
         </text>
       </svg>
@@ -79,13 +79,13 @@ function HistoryBar({ goal }: { goal: DailyGoal }) {
     <div className="flex items-center gap-2">
       <span className="text-xs text-stone-500 w-24 flex-shrink-0">{label}</span>
       <div className="flex-1 h-2 bg-stone-200 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${done ? 'bg-emerald-500' : 'bg-indigo-400'}`}
-          style={{ width: `${pct}%`, transition: 'width 0.3s' }} />
+        <div className={`h-full rounded-full`}
+          style={{ width: `${pct}%`, transition: 'width 0.3s', background: done ? '#2E5747' : '#3A6E82' }} />
       </div>
       <span className="text-xs text-stone-500 w-16 text-right flex-shrink-0">
         {goal.wordsWritten.toLocaleString()}
       </span>
-      {done && <CheckCircle2 size={13} className="text-emerald-500 flex-shrink-0" />}
+      {done && <CheckCircle2 size={13} className="text-dj-teal flex-shrink-0" />}
     </div>
   );
 }
@@ -129,7 +129,7 @@ export default function GoalPanel() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
         <div className="flex items-center gap-2">
-          <Target size={15} className="text-indigo-500" />
+          <Target size={15} className="text-dj-prussian" />
           <span className="text-sm font-semibold text-stone-700">Writing Goals</span>
         </div>
         <button onClick={toggleGoalPanel} className="p-1 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded transition-colors">
@@ -147,7 +147,7 @@ export default function GoalPanel() {
             </h3>
             <button
               onClick={() => { setWordGoalInput(String(book.wordCountGoal)); setEditWordGoal(!editWordGoal); }}
-              className="text-xs text-indigo-600 hover:underline"
+              className="text-xs text-dj-prussian hover:underline"
             >
               {editWordGoal ? 'Cancel' : 'Set goal'}
             </button>
@@ -160,9 +160,9 @@ export default function GoalPanel() {
               <input type="number" min="1000" step="1000" value={wordGoalInput}
                 onChange={(e) => setWordGoalInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSaveWordGoal()}
-                className="flex-1 border border-stone-300 rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-indigo-400" />
+                className="flex-1 border border-stone-300 rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-dj-prussian" />
               <button onClick={handleSaveWordGoal}
-                className="px-3 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 transition-colors">
+                className="px-3 py-1 bg-dj-prussian text-white text-xs rounded hover:bg-dj-teal transition-colors">
                 Save
               </button>
             </div>
@@ -174,8 +174,8 @@ export default function GoalPanel() {
                 <button key={n} onClick={() => setWordCountGoal(n)}
                   className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
                     book.wordCountGoal === n
-                      ? 'bg-violet-600 text-white border-violet-600'
-                      : 'border-stone-300 text-stone-500 hover:border-violet-400 hover:text-violet-600'
+                      ? 'bg-dj-prussian text-white border-dj-prussian'
+                      : 'border-stone-300 text-stone-500 hover:border-dj-prussian hover:text-dj-prussian'
                   }`}>
                   {(n / 1000).toFixed(0)}k
                 </button>
@@ -207,7 +207,7 @@ export default function GoalPanel() {
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-stone-600">Daily Target</span>
               <button onClick={() => { setDailyInput(String(book.dailyGoal)); setEditDailyGoal(!editDailyGoal); }}
-                className="text-xs text-indigo-600 hover:underline">
+                className="text-xs text-dj-prussian hover:underline">
                 {editDailyGoal ? 'Cancel' : 'Edit'}
               </button>
             </div>
@@ -216,9 +216,9 @@ export default function GoalPanel() {
                 <input type="number" min="1" max="10000" value={dailyInput}
                   onChange={(e) => setDailyInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveDailyGoal()}
-                  className="flex-1 border border-stone-300 rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-indigo-400" />
+                  className="flex-1 border border-stone-300 rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-dj-prussian" />
                 <button onClick={handleSaveDailyGoal}
-                  className="px-3 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 transition-colors">
+                  className="px-3 py-1 bg-dj-prussian text-white text-xs rounded hover:bg-dj-teal transition-colors">
                   Save
                 </button>
               </div>
@@ -228,8 +228,8 @@ export default function GoalPanel() {
                   <button key={n} onClick={() => setDailyGoal(n)}
                     className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                       book.dailyGoal === n
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'border-stone-300 text-stone-600 hover:border-indigo-400 hover:text-indigo-600'
+                        ? 'bg-dj-prussian text-white border-dj-prussian'
+                        : 'border-stone-300 text-stone-600 hover:border-dj-prussian hover:text-dj-prussian'
                     }`}>
                     {n.toLocaleString()}
                   </button>

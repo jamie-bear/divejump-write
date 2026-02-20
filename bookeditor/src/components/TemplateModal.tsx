@@ -6,23 +6,26 @@ const templates: {
   id: Template;
   name: string;
   description: string;
-  font: string;
+  titleFont: string;
+  bodyFont: string;
   specs: string[];
   preview: string;
 }[] = [
   {
     id: 'reedsy',
-    name: 'Reedsy',
-    description: 'Clean and professional. The standard for modern indie publishing.',
-    font: 'Palatino Linotype, serif',
-    specs: ['Palatino 11pt', '1.6 line height', '6×9 trim size', 'Generous margins'],
+    name: 'Standard',
+    description: 'Modern contrast pairing: Lato chapter titles with Merriweather body for clarity and warmth.',
+    titleFont: 'Lato, sans-serif',
+    bodyFont: 'Merriweather, Georgia, serif',
+    specs: ['Merriweather 10pt body', 'Lato titles', '1.7 line height', '6×9 trim size'],
     preview: 'Chapter One\n\nThe morning light filtered through the curtains, casting long shadows across the hardwood floor. She reached for the notebook on her nightstand and began to write.',
   },
   {
     id: 'classic',
     name: 'Classic',
     description: 'Traditional formatting. Double-spaced, letter-size. Great for manuscripts.',
-    font: 'Times New Roman, serif',
+    titleFont: 'Times New Roman, serif',
+    bodyFont: 'Times New Roman, serif',
     specs: ['Times New Roman 12pt', '2.0 line height', '8.5×11 trim size', '1-inch margins'],
     preview: 'Chapter One\n\nThe morning light filtered through the curtains, casting long shadows across the hardwood floor. She reached for the notebook on her nightstand and began to write.',
   },
@@ -30,7 +33,8 @@ const templates: {
     id: 'romance',
     name: 'Romance',
     description: 'Elegant Garamond type. Warm spacing for an intimate reading experience.',
-    font: 'Garamond, EB Garamond, serif',
+    titleFont: 'Garamond, EB Garamond, serif',
+    bodyFont: 'Garamond, EB Garamond, serif',
     specs: ['Garamond 11pt', '1.55 line height', '6×9 trim size', 'Stylized chapter heads'],
     preview: 'Chapter One\n\nThe morning light filtered through the curtains, casting long shadows across the hardwood floor. She reached for the notebook on her nightstand and began to write.',
   },
@@ -61,26 +65,26 @@ export default function TemplateModal() {
                 onClick={() => { setTemplate(tmpl.id); closeTemplateModal(); }}
                 className={`text-left rounded-xl border-2 overflow-hidden transition-all ${
                   isActive
-                    ? 'border-indigo-500 shadow-md'
-                    : 'border-stone-200 hover:border-indigo-300 hover:shadow-sm'
+                    ? 'border-dj-prussian shadow-md'
+                    : 'border-stone-200 hover:border-dj-prussian/40 hover:shadow-sm'
                 }`}
               >
                 {/* Preview area */}
                 <div className="bg-stone-50 p-4 h-36 overflow-hidden relative">
-                  <div
-                    className="text-stone-700 leading-relaxed"
-                    style={{ fontFamily: tmpl.font, fontSize: '10px' }}
-                  >
-                    <div className="font-bold text-sm mb-1.5" style={{ fontFamily: tmpl.font }}>
+                  <div className="text-stone-700 leading-relaxed" style={{ fontSize: '10px' }}>
+                    <div
+                      className="font-bold text-sm mb-1.5"
+                      style={{ fontFamily: tmpl.titleFont, textTransform: tmpl.id === 'reedsy' ? 'uppercase' : 'none', letterSpacing: tmpl.id === 'reedsy' ? '0.05em' : 'normal' }}
+                    >
                       {tmpl.preview.split('\n')[0]}
                     </div>
-                    <div style={{ lineHeight: tmpl.id === 'classic' ? '1.8' : '1.5' }}>
+                    <div style={{ fontFamily: tmpl.bodyFont, lineHeight: tmpl.id === 'classic' ? '1.8' : '1.6' }}>
                       {tmpl.preview.split('\n').slice(2).join(' ')}
                     </div>
                   </div>
                   <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-stone-50 to-transparent" />
                   {isActive && (
-                    <div className="absolute top-2 right-2 bg-indigo-600 text-white rounded-full p-0.5">
+                    <div className="absolute top-2 right-2 bg-dj-prussian text-white rounded-full p-0.5">
                       <Check size={11} />
                     </div>
                   )}

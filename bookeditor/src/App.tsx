@@ -32,7 +32,7 @@ function TopBar() {
 
   const totalWords = getTotalWordCount();
   const templateLabel: Record<string, string> = {
-    reedsy: 'Reedsy',
+    reedsy: 'Standard',
     classic: 'Classic',
     romance: 'Romance',
   };
@@ -41,9 +41,9 @@ function TopBar() {
     <header className="flex items-center gap-2 px-4 py-2 bg-white border-b border-stone-200 z-10 flex-shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2 mr-4">
-        <BookOpen size={20} className="text-indigo-600" />
+        <BookOpen size={20} className="text-dj-prussian" />
         <span className="font-bold text-stone-800 tracking-tight text-base">DiveJump</span>
-        <span className="text-xs bg-indigo-100 text-indigo-700 rounded px-1.5 py-0.5 font-medium">
+        <span className="text-xs bg-dj-prussian/10 text-dj-prussian rounded px-1.5 py-0.5 font-medium">
           Book Editor
         </span>
       </div>
@@ -58,7 +58,7 @@ function TopBar() {
         <span className="text-stone-300 mx-1">·</span>
         <button
           onClick={openTemplateModal}
-          className="text-xs text-stone-500 hover:text-indigo-600 transition-colors flex items-center gap-1"
+          className="text-xs text-stone-500 hover:text-dj-prussian transition-colors flex items-center gap-1"
           title="Change template"
         >
           <Palette size={12} />
@@ -83,7 +83,7 @@ function TopBar() {
           onClick={toggleNotesPanel}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
             showNotesPanel
-              ? 'bg-amber-100 text-amber-700'
+              ? 'bg-dj-red/20 text-dj-red'
               : 'text-stone-600 hover:bg-stone-100'
           }`}
           title="Toggle Notes Panel"
@@ -96,7 +96,7 @@ function TopBar() {
           onClick={toggleGoalPanel}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
             showGoalPanel
-              ? 'bg-indigo-100 text-indigo-700'
+              ? 'bg-dj-prussian/15 text-dj-prussian'
               : 'text-stone-600 hover:bg-stone-100'
           }`}
           title="Writing Goals"
@@ -109,7 +109,7 @@ function TopBar() {
 
         <button
           onClick={openExportModal}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-dj-prussian text-white rounded-lg hover:bg-dj-teal transition-colors shadow-sm"
           title="Export Book"
         >
           <Download size={14} />

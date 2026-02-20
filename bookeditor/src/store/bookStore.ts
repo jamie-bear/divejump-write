@@ -111,6 +111,7 @@ interface BookStore {
   deleteBook: (id: string) => void;
   newBook: () => void;
   importBook: (book: Book) => void;
+  importBooks: (books: Book[]) => void;
 }
 
 export const useBookStore = create<BookStore>()(
@@ -388,6 +389,18 @@ export const useBookStore = create<BookStore>()(
               : [...s.allBooks, book],
             activeSectionId: book.sections[0]?.id ?? null,
           }));
+        },
+
+        importBooks: (books) => {
+          set((s) => {
+            let updated = [...s.allBooks];
+            for (const book of books) {
+              const idx = updated.findIndex((b) => b.id === book.id);
+              if (idx >= 0) updated[idx] = book;
+              else updated.push(book);
+            }
+            return { allBooks: updated };
+          });
         },
       };
     },

@@ -16,6 +16,49 @@ import { useBookStore } from '../store/bookStore';
 import type { Section, SectionType } from '../types';
 import { FRONT_MATTER_PRESETS, BACK_MATTER_PRESETS, COVER_SECTION_ID } from '../types';
 
+// ── Module-level drag state ──────────────────────────────────────────────────
+// Using a module variable avoids React state and enables cross-group dragging.
+let activeDragId: string | null = null;
+
+/**
+ * Compute the new section order after a cross-group or same-group drop.
+ * The dragged section's type is updated to targetType and inserted at
+ * position targetIdx within that type's sections.
+ */
+function computeDropResult(
+  allSections: Section[],
+  draggedId: string,
+  targetType: SectionType,
+  targetIdx: number
+): Section[] | null {
+  const dragged = allSections.find((s) => s.id === draggedId);
+  if (!dragged) return null;
+
+  const remaining = allSections.filter((s) => s.id !== draggedId);
+  const updated = { ...dragged, type: targetType };
+  const targetSections = remaining.filter((s) => s.type === targetType);
+
+  let insertAbsIdx: number;
+  if (targetIdx >= targetSections.length) {
+    // Append after the last section of the target type
+    let lastIdx = -1;
+    for (let i = remaining.length - 1; i >= 0; i--) {
+      if (remaining[i].type === targetType) { lastIdx = i; break; }
+    }
+    insertAbsIdx = lastIdx === -1 ? remaining.length : lastIdx + 1;
+  } else {
+    // Insert before the targetIdx-th section of the target type
+    const beforeId = targetSections[targetIdx].id;
+    insertAbsIdx = remaining.findIndex((s) => s.id === beforeId);
+  }
+
+  const result = [...remaining];
+  result.splice(insertAbsIdx, 0, updated);
+  return result;
+}
+
+// ── SectionItem ──────────────────────────────────────────────────────────────
+
 interface SectionItemProps {
   section: Section;
   isActive: boolean;
@@ -24,7 +67,7 @@ interface SectionItemProps {
   onRename: (title: string) => void;
   onDragStart: () => void;
   onDragOver: (e: React.DragEvent) => void;
-  onDrop: () => void;
+  onDrop: (e: React.DragEvent) => void;
   onDragEnd: () => void;
   isDragOver: boolean;
 }
@@ -94,17 +137,11 @@ function SectionItem({
       )}
       <div className="flex-shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         {editing ? (
-          <button
-            onClick={(e) => { e.stopPropagation(); commitEdit(); }}
-            className="p-0.5 hover:bg-white/20 rounded"
-          >
+          <button onClick={(e) => { e.stopPropagation(); commitEdit(); }} className="p-0.5 hover:bg-white/20 rounded">
             <Check size={12} />
           </button>
         ) : (
-          <button
-            onClick={startEdit}
-            className="p-0.5 hover:bg-white/20 rounded"
-          >
+          <button onClick={startEdit} className="p-0.5 hover:bg-white/20 rounded">
             <Pencil size={12} />
           </button>
         )}
@@ -119,6 +156,8 @@ function SectionItem({
   );
 }
 
+// ── SectionGroup ─────────────────────────────────────────────────────────────
+
 interface GroupProps {
   label: string;
   icon: React.ReactNode;
@@ -132,16 +171,13 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
   const [open, setOpen] = useState(defaultOpen);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
-  const dragSrcIdx = useRef<number | null>(null);
 
   const { setActiveSection, addSection, removeSection, renameSection, reorderSections, book } = useBookStore();
 
   const presets =
-    type === 'frontmatter'
-      ? FRONT_MATTER_PRESETS
-      : type === 'backmatter'
-      ? BACK_MATTER_PRESETS
-      : null;
+    type === 'frontmatter' ? FRONT_MATTER_PRESETS
+    : type === 'backmatter' ? BACK_MATTER_PRESETS
+    : null;
 
   const handleAdd = (title?: string) => {
     addSection(type, title);
@@ -150,24 +186,24 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
   };
 
   const handleDrop = (toIdx: number) => {
-    const from = dragSrcIdx.current;
-    dragSrcIdx.current = null;
+    if (!activeDragId) { setDragOverIdx(null); return; }
+    const draggedId = activeDragId;
+    activeDragId = null;
     setDragOverIdx(null);
-    if (from === null || from === toIdx) return;
-
-    const reordered = [...sections];
-    const [moved] = reordered.splice(from, 1);
-    reordered.splice(toIdx, 0, moved);
-
-    let gIdx = 0;
-    const result = book.sections.map((sec) =>
-      sec.type === type ? reordered[gIdx++] : sec
-    );
-    reorderSections(result);
+    const result = computeDropResult(book.sections, draggedId, type, toIdx);
+    if (result) reorderSections(result);
   };
 
   return (
-    <div className="mb-1">
+    <div
+      className="mb-1"
+      onDragLeave={(e) => {
+        // Only clear when the mouse actually leaves the entire group container
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setDragOverIdx(null);
+        }
+      }}
+    >
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-stone-400 hover:text-dj-mint transition-colors"
@@ -187,13 +223,24 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
               onSelect={() => setActiveSection(sec.id)}
               onDelete={() => removeSection(sec.id)}
               onRename={(t) => renameSection(sec.id, t)}
-              onDragStart={() => { dragSrcIdx.current = idx; }}
-              onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
-              onDrop={() => handleDrop(idx)}
-              onDragEnd={() => { dragSrcIdx.current = null; setDragOverIdx(null); }}
+              onDragStart={() => { activeDragId = sec.id; }}
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverIdx(idx); }}
+              onDrop={(e) => { e.stopPropagation(); handleDrop(idx); }}
+              onDragEnd={() => { activeDragId = null; setDragOverIdx(null); }}
               isDragOver={dragOverIdx === idx}
             />
           ))}
+
+          {/* End-of-group drop zone — expands when hovered during drag */}
+          <div
+            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverIdx(sections.length); }}
+            onDrop={(e) => { e.stopPropagation(); handleDrop(sections.length); }}
+            className={`mx-2 rounded-md border-2 border-dashed transition-all duration-150 ${
+              dragOverIdx === sections.length
+                ? 'h-7 border-dj-mint/70 bg-dj-mint/10 mb-1'
+                : 'h-1 border-transparent'
+            }`}
+          />
 
           {/* Add button */}
           <div className="relative mx-1 mt-1">
@@ -233,6 +280,8 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
   );
 }
 
+// ── CoverSection ─────────────────────────────────────────────────────────────
+
 function CoverSection() {
   const { book, activeSectionId, setActiveSection, setCoverImage } = useBookStore();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -257,7 +306,6 @@ function CoverSection() {
             : 'text-stone-300 hover:bg-white/10 hover:text-white'
         }`}
       >
-        {/* Small cover thumbnail */}
         <div className="w-5 h-7 flex-shrink-0 rounded-sm overflow-hidden bg-white/10 border border-white/15">
           {book.coverImage ? (
             <img src={book.coverImage} alt="Cover" className="w-full h-full object-cover" />
@@ -283,6 +331,8 @@ function CoverSection() {
   );
 }
 
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
 export default function Sidebar() {
   const { book, activeSectionId, setBookTitle, setBookAuthor } = useBookStore();
   const [editingTitle, setEditingTitle] = useState(false);
@@ -294,7 +344,6 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 flex-shrink-0 bg-dj-maroon border-r border-white/10 flex flex-col h-screen overflow-hidden">
-      {/* Book header */}
       <div className="px-4 py-5 border-b border-white/10">
         <div className="flex items-center gap-2 mb-3">
           <BookOpen size={18} className="text-dj-mint flex-shrink-0" />
@@ -328,10 +377,8 @@ export default function Sidebar() {
         />
       </div>
 
-      {/* Structure */}
       <div className="flex-1 overflow-y-auto py-3 scrollbar-thin">
         <CoverSection />
-
         <div className="border-t border-white/10 mb-2" />
 
         <SectionGroup
@@ -366,7 +413,6 @@ export default function Sidebar() {
         />
       </div>
 
-      {/* Footer stats */}
       <div className="px-4 py-3 border-t border-white/10 text-xs text-stone-500">
         <div className="flex justify-between">
           <span>{book.sections.length} sections</span>

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { X, Plus, Trash2, BookOpen, Clock, Hash, Upload } from 'lucide-react';
 import { useBookStore, countWords, extractTextFromJSON } from '../store/bookStore';
-import { importBookFromJSON } from '../utils/export/json';
+import { importFromFile } from '../utils/export/json';
 import type { Book } from '../types';
 
 function bookWordCount(book: Book): number {
@@ -59,19 +59,11 @@ function BookCard({ book, isCurrent, onOpen, onDelete }: BookCardProps) {
       {/* Info */}
       <div className="p-3 flex-1 flex flex-col">
         <h3 className="text-sm font-semibold text-stone-800 truncate">{book.title}</h3>
-        {book.author && (
-          <p className="text-xs text-stone-500 truncate mt-0.5">{book.author}</p>
-        )}
+        {book.author && <p className="text-xs text-stone-500 truncate mt-0.5">{book.author}</p>}
         <div className="flex items-center gap-2 mt-2 text-xs text-stone-400">
-          <span className="flex items-center gap-0.5">
-            <Hash size={10} />
-            {words.toLocaleString()}
-          </span>
+          <span className="flex items-center gap-0.5"><Hash size={10} />{words.toLocaleString()}</span>
           <span>·</span>
-          <span className="flex items-center gap-0.5">
-            <Clock size={10} />
-            {formatRelative(book.updatedAt)}
-          </span>
+          <span className="flex items-center gap-0.5"><Clock size={10} />{formatRelative(book.updatedAt)}</span>
         </div>
         <span className="mt-2 self-start text-xs bg-stone-100 text-stone-500 rounded px-1.5 py-0.5">
           {TEMPLATE_LABEL[book.template] ?? book.template}
@@ -85,15 +77,11 @@ function BookCard({ book, isCurrent, onOpen, onDelete }: BookCardProps) {
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(); }}
               className="px-2 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 shadow"
-            >
-              Delete
-            </button>
+            >Delete</button>
             <button
               onClick={(e) => { e.stopPropagation(); setConfirmDelete(false); }}
               className="px-2 py-1 bg-white text-stone-600 text-xs rounded-lg hover:bg-stone-100 shadow border border-stone-200"
-            >
-              Cancel
-            </button>
+            >Cancel</button>
           </div>
         ) : (
           <button
@@ -106,7 +94,6 @@ function BookCard({ book, isCurrent, onOpen, onDelete }: BookCardProps) {
         )}
       </div>
 
-      {/* Current badge */}
       {isCurrent && (
         <div className="absolute top-2 left-2 bg-dj-prussian text-white text-xs px-1.5 py-0.5 rounded font-medium">
           Open
@@ -117,28 +104,33 @@ function BookCard({ book, isCurrent, onOpen, onDelete }: BookCardProps) {
 }
 
 export default function LibraryModal() {
-  const { allBooks, currentBookId, openBook, createBook, deleteBook, closeLibrary, importBook } = useBookStore();
+  const { allBooks, currentBookId, openBook, createBook, deleteBook, closeLibrary, importBook, importBooks } = useBookStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setImportError(null);
+    setImportSuccess(null);
     try {
-      const book = await importBookFromJSON(file);
-      importBook(book);
+      const result = await importFromFile(file);
+      if (Array.isArray(result)) {
+        importBooks(result);
+        setImportSuccess(`Imported ${result.length} book${result.length !== 1 ? 's' : ''} from library.`);
+      } else {
+        importBook(result);
+        setImportSuccess(`Imported "${result.title}".`);
+      }
     } catch {
-      setImportError('Could not read file. Make sure it is a valid .djbook file.');
+      setImportError('Could not read file. Make sure it is a valid .djbook or .djlib file.');
     }
     e.target.value = '';
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-      onClick={closeLibrary}
-    >
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={closeLibrary}>
       <div
         className="bg-stone-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -156,7 +148,7 @@ export default function LibraryModal() {
             <button
               onClick={() => fileRef.current?.click()}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-dj-prussian border border-dj-prussian/30 bg-dj-prussian/5 rounded-lg hover:bg-dj-prussian/10 transition-colors"
-              title="Import a .djbook file"
+              title="Import .djbook or .djlib file"
             >
               <Upload size={13} />
               Import
@@ -171,18 +163,18 @@ export default function LibraryModal() {
             <button
               onClick={closeLibrary}
               className="p-1.5 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
-              title="Close"
             >
               <X size={15} />
             </button>
           </div>
         </div>
 
-        {/* Error */}
+        {/* Feedback banners */}
         {importError && (
-          <div className="mx-6 mt-4 px-3 py-2 bg-red-50 text-red-600 text-xs rounded-lg">
-            {importError}
-          </div>
+          <div className="mx-6 mt-4 px-3 py-2 bg-red-50 text-red-600 text-xs rounded-lg">{importError}</div>
+        )}
+        {importSuccess && (
+          <div className="mx-6 mt-4 px-3 py-2 bg-dj-mint/20 text-dj-teal text-xs rounded-lg font-medium">{importSuccess}</div>
         )}
 
         {/* Book grid */}
@@ -210,7 +202,7 @@ export default function LibraryModal() {
         <input
           ref={fileRef}
           type="file"
-          accept=".djbook,.json"
+          accept=".djbook,.djlib,.json"
           onChange={handleImport}
           className="hidden"
         />

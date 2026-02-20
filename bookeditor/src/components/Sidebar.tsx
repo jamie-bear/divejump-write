@@ -11,7 +11,6 @@ import {
   Pencil,
   Check,
   ImagePlus,
-  X,
 } from 'lucide-react';
 import { useBookStore } from '../store/bookStore';
 import type { Section, SectionType } from '../types';
@@ -23,9 +22,25 @@ interface SectionItemProps {
   onSelect: () => void;
   onDelete: () => void;
   onRename: (title: string) => void;
+  onDragStart: () => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: () => void;
+  onDragEnd: () => void;
+  isDragOver: boolean;
 }
 
-function SectionItem({ section, isActive, onSelect, onDelete, onRename }: SectionItemProps) {
+function SectionItem({
+  section,
+  isActive,
+  onSelect,
+  onDelete,
+  onRename,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+  isDragOver,
+}: SectionItemProps) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(section.title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -44,14 +59,21 @@ function SectionItem({ section, isActive, onSelect, onDelete, onRename }: Sectio
 
   return (
     <div
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
       onClick={onSelect}
-      className={`group flex items-center gap-1.5 px-3 py-1.5 cursor-pointer rounded-md mx-1 transition-colors ${
+      className={`group flex items-center gap-1.5 px-3 py-1.5 cursor-pointer rounded-md mx-1 transition-colors select-none ${
+        isDragOver ? 'ring-2 ring-indigo-400 ring-inset' : ''
+      } ${
         isActive
           ? 'bg-indigo-600 text-white'
           : 'text-stone-300 hover:bg-stone-700 hover:text-white'
       }`}
     >
-      <GripVertical size={13} className="opacity-30 flex-shrink-0" />
+      <GripVertical size={13} className="opacity-40 flex-shrink-0 cursor-grab active:cursor-grabbing" />
       <FileText size={13} className="flex-shrink-0 opacity-70" />
       {editing ? (
         <input
@@ -109,7 +131,10 @@ interface GroupProps {
 function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpen = true }: GroupProps) {
   const [open, setOpen] = useState(defaultOpen);
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const { setActiveSection, addSection, removeSection, renameSection } = useBookStore();
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const dragSrcIdx = useRef<number | null>(null);
+
+  const { setActiveSection, addSection, removeSection, renameSection, reorderSections, book } = useBookStore();
 
   const presets =
     type === 'frontmatter'
@@ -122,6 +147,24 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
     addSection(type, title);
     setShowAddMenu(false);
     setOpen(true);
+  };
+
+  const handleDrop = (toIdx: number) => {
+    const from = dragSrcIdx.current;
+    dragSrcIdx.current = null;
+    setDragOverIdx(null);
+    if (from === null || from === toIdx) return;
+
+    const reordered = [...sections];
+    const [moved] = reordered.splice(from, 1);
+    reordered.splice(toIdx, 0, moved);
+
+    // Rebuild the full section list preserving sections of other types
+    let gIdx = 0;
+    const result = book.sections.map((sec) =>
+      sec.type === type ? reordered[gIdx++] : sec
+    );
+    reorderSections(result);
   };
 
   return (
@@ -137,7 +180,7 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
 
       {open && (
         <div className="pb-1">
-          {sections.map((sec) => (
+          {sections.map((sec, idx) => (
             <SectionItem
               key={sec.id}
               section={sec}
@@ -145,6 +188,11 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
               onSelect={() => setActiveSection(sec.id)}
               onDelete={() => removeSection(sec.id)}
               onRename={(t) => renameSection(sec.id, t)}
+              onDragStart={() => { dragSrcIdx.current = idx; }}
+              onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
+              onDrop={() => handleDrop(idx)}
+              onDragEnd={() => { dragSrcIdx.current = null; setDragOverIdx(null); }}
+              isDragOver={dragOverIdx === idx}
             />
           ))}
 
@@ -201,46 +249,36 @@ function CoverSection() {
   };
 
   return (
-    <div className="px-3 pb-3">
+    <div className="mx-1 mb-1">
       <div
-        className={`relative group rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-          isActive ? 'border-indigo-500' : 'border-stone-700 hover:border-stone-500'
-        }`}
-        style={{ aspectRatio: '2/3' }}
         onClick={() => setActiveSection(COVER_SECTION_ID)}
+        className={`group flex items-center gap-1.5 px-3 py-1.5 cursor-pointer rounded-md transition-colors ${
+          isActive
+            ? 'bg-indigo-600 text-white'
+            : 'text-stone-300 hover:bg-stone-700 hover:text-white'
+        }`}
       >
-        {book.coverImage ? (
-          <img src={book.coverImage} className="w-full h-full object-cover" alt="Book cover" />
-        ) : (
-          <div className="w-full h-full bg-stone-800 flex flex-col items-center justify-center gap-1.5">
-            <ImagePlus size={22} className="text-stone-500" />
-            <span className="text-xs text-stone-500">Add Cover</span>
-          </div>
-        )}
-
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-            className="text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors"
-          >
-            {book.coverImage ? 'Change Cover' : 'Upload Cover'}
-          </button>
-          {book.coverImage && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setCoverImage(null); }}
-              className="text-xs text-white/70 hover:text-white flex items-center gap-1"
-            >
-              <X size={11} /> Remove
-            </button>
+        {/* Small cover thumbnail */}
+        <div className="w-5 h-7 flex-shrink-0 rounded-sm overflow-hidden bg-stone-700 border border-stone-600/60">
+          {book.coverImage ? (
+            <img src={book.coverImage} alt="Cover" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center opacity-50">
+              <ImagePlus size={9} />
+            </div>
           )}
         </div>
-
-        {isActive && (
-          <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-400" />
-        )}
+        <span className="flex-1 text-sm truncate">Cover</span>
+        <button
+          onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+          className={`opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity ${
+            isActive ? 'hover:bg-white/20' : 'hover:bg-stone-600'
+          }`}
+          title="Upload cover image"
+        >
+          <ImagePlus size={12} />
+        </button>
       </div>
-      <p className="text-center text-xs text-stone-500 mt-1.5">Cover</p>
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
     </div>
   );

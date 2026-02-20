@@ -12,7 +12,6 @@ function today(): string {
 
 function createDefaultBook(): Book {
   const now = new Date().toISOString();
-  const chapterId = generateId();
   return {
     id: generateId(),
     title: 'Untitled Book',
@@ -28,7 +27,7 @@ function createDefaultBook(): Book {
         notes: [],
       },
       {
-        id: chapterId,
+        id: generateId(),
         type: 'chapter',
         title: 'Chapter One',
         content: '',
@@ -46,13 +45,27 @@ function createDefaultBook(): Book {
   };
 }
 
+function applyBookMutation(
+  s: { book: Book; allBooks: Book[] },
+  updater: (b: Book) => Book
+): { book: Book; allBooks: Book[] } {
+  const updated = updater(s.book);
+  return {
+    book: updated,
+    allBooks: s.allBooks.map((b) => (b.id === updated.id ? updated : b)),
+  };
+}
+
 interface BookStore {
   book: Book;
+  allBooks: Book[];
+  currentBookId: string;
   activeSectionId: string | null;
   showNotesPanel: boolean;
   showGoalPanel: boolean;
   showExportModal: boolean;
   showTemplateModal: boolean;
+  showLibrary: boolean;
 
   // Book metadata
   setBookTitle: (title: string) => void;
@@ -89,269 +102,314 @@ interface BookStore {
   closeExportModal: () => void;
   openTemplateModal: () => void;
   closeTemplateModal: () => void;
+  openLibrary: () => void;
+  closeLibrary: () => void;
 
-  // Book management
+  // Library / book management
+  openBook: (id: string) => void;
+  createBook: () => void;
+  deleteBook: (id: string) => void;
   newBook: () => void;
   importBook: (book: Book) => void;
 }
 
 export const useBookStore = create<BookStore>()(
   persist(
-    (set, get) => ({
-      book: createDefaultBook(),
-      activeSectionId: null,
-      showNotesPanel: false,
-      showGoalPanel: false,
-      showExportModal: false,
-      showTemplateModal: false,
+    (set, get) => {
+      const defaultBook = createDefaultBook();
+      return {
+        book: defaultBook,
+        allBooks: [defaultBook],
+        currentBookId: defaultBook.id,
+        activeSectionId: null,
+        showNotesPanel: false,
+        showGoalPanel: false,
+        showExportModal: false,
+        showTemplateModal: false,
+        showLibrary: false,
 
-      setBookTitle: (title) =>
-        set((s) => ({
-          book: { ...s.book, title, updatedAt: new Date().toISOString() },
-        })),
+        setBookTitle: (title) =>
+          set((s) => applyBookMutation(s, (b) => ({ ...b, title, updatedAt: new Date().toISOString() }))),
 
-      setBookAuthor: (author) =>
-        set((s) => ({
-          book: { ...s.book, author, updatedAt: new Date().toISOString() },
-        })),
+        setBookAuthor: (author) =>
+          set((s) => applyBookMutation(s, (b) => ({ ...b, author, updatedAt: new Date().toISOString() }))),
 
-      setTemplate: (template) =>
-        set((s) => ({
-          book: { ...s.book, template, updatedAt: new Date().toISOString() },
-        })),
+        setTemplate: (template) =>
+          set((s) => applyBookMutation(s, (b) => ({ ...b, template, updatedAt: new Date().toISOString() }))),
 
-      setCoverImage: (image) =>
-        set((s) => ({
-          book: { ...s.book, coverImage: image, updatedAt: new Date().toISOString() },
-        })),
+        setCoverImage: (image) =>
+          set((s) =>
+            applyBookMutation(s, (b) => ({ ...b, coverImage: image, updatedAt: new Date().toISOString() }))
+          ),
 
-      setParagraphIndent: (indent) =>
-        set((s) => ({
-          book: { ...s.book, paragraphIndent: indent, updatedAt: new Date().toISOString() },
-        })),
+        setParagraphIndent: (indent) =>
+          set((s) =>
+            applyBookMutation(s, (b) => ({ ...b, paragraphIndent: indent, updatedAt: new Date().toISOString() }))
+          ),
 
-      setActiveSection: (id) => set({ activeSectionId: id }),
+        setActiveSection: (id) => set({ activeSectionId: id }),
 
-      addSection: (type, title) => {
-        const { book } = get();
-        const sectionsOfType = book.sections.filter((s) => s.type === type);
-        let newTitle = title;
-        if (!newTitle) {
-          if (type === 'chapter') {
-            newTitle = `Chapter ${sectionsOfType.length + 1}`;
-          } else if (type === 'frontmatter') {
-            newTitle = 'Front Matter';
-          } else {
-            newTitle = 'Back Matter';
+        addSection: (type, title) => {
+          const { book } = get();
+          const sectionsOfType = book.sections.filter((s) => s.type === type);
+          let newTitle = title;
+          if (!newTitle) {
+            if (type === 'chapter') {
+              newTitle = `Chapter ${sectionsOfType.length + 1}`;
+            } else if (type === 'frontmatter') {
+              newTitle = 'Front Matter';
+            } else {
+              newTitle = 'Back Matter';
+            }
           }
-        }
-        const newSection: Section = {
-          id: generateId(),
-          type,
-          title: newTitle,
-          content: '',
-          order: book.sections.length,
-          notes: [],
-        };
-        set((s) => ({
-          book: {
-            ...s.book,
-            sections: [...s.book.sections, newSection],
-            updatedAt: new Date().toISOString(),
-          },
-          activeSectionId: newSection.id,
-        }));
-      },
+          const newSection: Section = {
+            id: generateId(),
+            type,
+            title: newTitle,
+            content: '',
+            order: book.sections.length,
+            notes: [],
+          };
+          set((s) => ({
+            ...applyBookMutation(s, (b) => ({
+              ...b,
+              sections: [...b.sections, newSection],
+              updatedAt: new Date().toISOString(),
+            })),
+            activeSectionId: newSection.id,
+          }));
+        },
 
-      removeSection: (id) => {
-        const { book, activeSectionId } = get();
-        if (book.sections.length <= 1) return;
-        const filtered = book.sections.filter((s) => s.id !== id);
-        set((s) => ({
-          book: {
-            ...s.book,
-            sections: filtered,
-            updatedAt: new Date().toISOString(),
-          },
-          activeSectionId: activeSectionId === id ? (filtered[0]?.id ?? null) : activeSectionId,
-        }));
-      },
+        removeSection: (id) => {
+          const { book, activeSectionId } = get();
+          if (book.sections.length <= 1) return;
+          const filtered = book.sections.filter((s) => s.id !== id);
+          set((s) => ({
+            ...applyBookMutation(s, (b) => ({
+              ...b,
+              sections: filtered,
+              updatedAt: new Date().toISOString(),
+            })),
+            activeSectionId: activeSectionId === id ? (filtered[0]?.id ?? null) : activeSectionId,
+          }));
+        },
 
-      renameSection: (id, title) =>
-        set((s) => ({
-          book: {
-            ...s.book,
-            sections: s.book.sections.map((sec) =>
-              sec.id === id ? { ...sec, title } : sec
-            ),
-            updatedAt: new Date().toISOString(),
-          },
-        })),
+        renameSection: (id, title) =>
+          set((s) =>
+            applyBookMutation(s, (b) => ({
+              ...b,
+              sections: b.sections.map((sec) => (sec.id === id ? { ...sec, title } : sec)),
+              updatedAt: new Date().toISOString(),
+            }))
+          ),
 
-      reorderSections: (sections) =>
-        set((s) => ({
-          book: { ...s.book, sections, updatedAt: new Date().toISOString() },
-        })),
+        reorderSections: (sections) =>
+          set((s) =>
+            applyBookMutation(s, (b) => ({ ...b, sections, updatedAt: new Date().toISOString() }))
+          ),
 
-      updateSectionContent: (id, content) =>
-        set((s) => ({
-          book: {
-            ...s.book,
-            sections: s.book.sections.map((sec) =>
-              sec.id === id ? { ...sec, content } : sec
-            ),
-            updatedAt: new Date().toISOString(),
-          },
-        })),
+        updateSectionContent: (id, content) =>
+          set((s) =>
+            applyBookMutation(s, (b) => ({
+              ...b,
+              sections: b.sections.map((sec) => (sec.id === id ? { ...sec, content } : sec)),
+              updatedAt: new Date().toISOString(),
+            }))
+          ),
 
-      addNote: (sectionId, content, color = 'yellow') => {
-        const newNote: Note = {
-          id: generateId(),
-          content,
-          pinned: false,
-          color,
-          createdAt: new Date().toISOString(),
-        };
-        set((s) => ({
-          book: {
-            ...s.book,
-            sections: s.book.sections.map((sec) =>
-              sec.id === sectionId
-                ? { ...sec, notes: [...sec.notes, newNote] }
-                : sec
-            ),
-          },
-        }));
-      },
-
-      updateNote: (sectionId, noteId, content) =>
-        set((s) => ({
-          book: {
-            ...s.book,
-            sections: s.book.sections.map((sec) =>
-              sec.id === sectionId
-                ? {
-                    ...sec,
-                    notes: sec.notes.map((n) =>
-                      n.id === noteId ? { ...n, content } : n
-                    ),
-                  }
-                : sec
-            ),
-          },
-        })),
-
-      deleteNote: (sectionId, noteId) =>
-        set((s) => ({
-          book: {
-            ...s.book,
-            sections: s.book.sections.map((sec) =>
-              sec.id === sectionId
-                ? { ...sec, notes: sec.notes.filter((n) => n.id !== noteId) }
-                : sec
-            ),
-          },
-        })),
-
-      toggleNotePin: (sectionId, noteId) =>
-        set((s) => ({
-          book: {
-            ...s.book,
-            sections: s.book.sections.map((sec) =>
-              sec.id === sectionId
-                ? {
-                    ...sec,
-                    notes: sec.notes.map((n) =>
-                      n.id === noteId ? { ...n, pinned: !n.pinned } : n
-                    ),
-                  }
-                : sec
-            ),
-          },
-        })),
-
-      setDailyGoal: (words) =>
-        set((s) => ({
-          book: { ...s.book, dailyGoal: words },
-        })),
-
-      setWordCountGoal: (words) =>
-        set((s) => ({
-          book: { ...s.book, wordCountGoal: words },
-        })),
-
-      updateDailyProgress: (words) => {
-        const { book } = get();
-        const todayStr = today();
-        const existingIdx = book.goalHistory.findIndex((g) => g.date === todayStr);
-        let newHistory: DailyGoal[];
-        if (existingIdx >= 0) {
-          newHistory = book.goalHistory.map((g, i) =>
-            i === existingIdx ? { ...g, wordsWritten: words } : g
+        addNote: (sectionId, content, color = 'yellow') => {
+          const newNote: Note = {
+            id: generateId(),
+            content,
+            pinned: false,
+            color,
+            createdAt: new Date().toISOString(),
+          };
+          set((s) =>
+            applyBookMutation(s, (b) => ({
+              ...b,
+              sections: b.sections.map((sec) =>
+                sec.id === sectionId ? { ...sec, notes: [...sec.notes, newNote] } : sec
+              ),
+            }))
           );
-        } else {
-          newHistory = [
-            ...book.goalHistory,
-            { date: todayStr, target: book.dailyGoal, wordsWritten: words },
-          ];
-        }
-        set((s) => ({
-          book: { ...s.book, goalHistory: newHistory },
-        }));
-      },
+        },
 
-      getTodayGoal: () => {
-        const { book } = get();
-        const todayStr = today();
-        return (
-          book.goalHistory.find((g) => g.date === todayStr) ?? {
-            date: todayStr,
-            target: book.dailyGoal,
-            wordsWritten: 0,
+        updateNote: (sectionId, noteId, content) =>
+          set((s) =>
+            applyBookMutation(s, (b) => ({
+              ...b,
+              sections: b.sections.map((sec) =>
+                sec.id === sectionId
+                  ? { ...sec, notes: sec.notes.map((n) => (n.id === noteId ? { ...n, content } : n)) }
+                  : sec
+              ),
+            }))
+          ),
+
+        deleteNote: (sectionId, noteId) =>
+          set((s) =>
+            applyBookMutation(s, (b) => ({
+              ...b,
+              sections: b.sections.map((sec) =>
+                sec.id === sectionId
+                  ? { ...sec, notes: sec.notes.filter((n) => n.id !== noteId) }
+                  : sec
+              ),
+            }))
+          ),
+
+        toggleNotePin: (sectionId, noteId) =>
+          set((s) =>
+            applyBookMutation(s, (b) => ({
+              ...b,
+              sections: b.sections.map((sec) =>
+                sec.id === sectionId
+                  ? {
+                      ...sec,
+                      notes: sec.notes.map((n) => (n.id === noteId ? { ...n, pinned: !n.pinned } : n)),
+                    }
+                  : sec
+              ),
+            }))
+          ),
+
+        setDailyGoal: (words) =>
+          set((s) => applyBookMutation(s, (b) => ({ ...b, dailyGoal: words }))),
+
+        setWordCountGoal: (words) =>
+          set((s) => applyBookMutation(s, (b) => ({ ...b, wordCountGoal: words }))),
+
+        updateDailyProgress: (words) => {
+          const { book } = get();
+          const todayStr = today();
+          const existingIdx = book.goalHistory.findIndex((g) => g.date === todayStr);
+          let newHistory: DailyGoal[];
+          if (existingIdx >= 0) {
+            newHistory = book.goalHistory.map((g, i) =>
+              i === existingIdx ? { ...g, wordsWritten: words } : g
+            );
+          } else {
+            newHistory = [
+              ...book.goalHistory,
+              { date: todayStr, target: book.dailyGoal, wordsWritten: words },
+            ];
           }
-        );
-      },
+          set((s) => applyBookMutation(s, (b) => ({ ...b, goalHistory: newHistory })));
+        },
 
-      getTotalWordCount: () => {
-        const { book } = get();
-        return book.sections.reduce((total, sec) => {
-          if (!sec.content) return total;
-          try {
-            const parsed = JSON.parse(sec.content);
-            const text = extractText(parsed);
-            return total + countWords(text);
-          } catch {
-            return total + countWords(sec.content);
+        getTodayGoal: () => {
+          const { book } = get();
+          const todayStr = today();
+          return (
+            book.goalHistory.find((g) => g.date === todayStr) ?? {
+              date: todayStr,
+              target: book.dailyGoal,
+              wordsWritten: 0,
+            }
+          );
+        },
+
+        getTotalWordCount: () => {
+          const { book } = get();
+          return book.sections.reduce((total, sec) => {
+            if (!sec.content) return total;
+            try {
+              const parsed = JSON.parse(sec.content);
+              const text = extractText(parsed);
+              return total + countWords(text);
+            } catch {
+              return total + countWords(sec.content);
+            }
+          }, 0);
+        },
+
+        toggleNotesPanel: () => set((s) => ({ showNotesPanel: !s.showNotesPanel })),
+        toggleGoalPanel: () => set((s) => ({ showGoalPanel: !s.showGoalPanel })),
+        openExportModal: () => set({ showExportModal: true }),
+        closeExportModal: () => set({ showExportModal: false }),
+        openTemplateModal: () => set({ showTemplateModal: true }),
+        closeTemplateModal: () => set({ showTemplateModal: false }),
+        openLibrary: () => set({ showLibrary: true }),
+        closeLibrary: () => set({ showLibrary: false }),
+
+        openBook: (id) => {
+          const { allBooks } = get();
+          const found = allBooks.find((b) => b.id === id);
+          if (!found) return;
+          set({
+            book: found,
+            currentBookId: id,
+            activeSectionId: found.sections[0]?.id ?? null,
+            showLibrary: false,
+          });
+        },
+
+        createBook: () => {
+          const nb = createDefaultBook();
+          set((s) => ({
+            book: nb,
+            currentBookId: nb.id,
+            allBooks: [...s.allBooks, nb],
+            activeSectionId: nb.sections[0]?.id ?? null,
+            showLibrary: false,
+          }));
+        },
+
+        deleteBook: (id) => {
+          const { allBooks, currentBookId } = get();
+          const filtered = allBooks.filter((b) => b.id !== id);
+          if (filtered.length === 0) {
+            const nb = createDefaultBook();
+            set({ allBooks: [nb], book: nb, currentBookId: nb.id, activeSectionId: nb.sections[0]?.id ?? null });
+            return;
           }
-        }, 0);
-      },
+          if (id === currentBookId) {
+            const next = filtered[0];
+            set({
+              allBooks: filtered,
+              book: next,
+              currentBookId: next.id,
+              activeSectionId: next.sections[0]?.id ?? null,
+            });
+          } else {
+            set({ allBooks: filtered });
+          }
+        },
 
-      toggleNotesPanel: () => set((s) => ({ showNotesPanel: !s.showNotesPanel })),
-      toggleGoalPanel: () => set((s) => ({ showGoalPanel: !s.showGoalPanel })),
-      openExportModal: () => set({ showExportModal: true }),
-      closeExportModal: () => set({ showExportModal: false }),
-      openTemplateModal: () => set({ showTemplateModal: true }),
-      closeTemplateModal: () => set({ showTemplateModal: false }),
+        newBook: () => set({ showLibrary: true }),
 
-      newBook: () => {
-        const book = createDefaultBook();
-        set({
-          book,
-          activeSectionId: book.sections[0]?.id ?? null,
-        });
-      },
-
-      importBook: (book) => set({ book, activeSectionId: book.sections[0]?.id ?? null }),
-    }),
+        importBook: (book) => {
+          set((s) => ({
+            book,
+            currentBookId: book.id,
+            allBooks: s.allBooks.some((b) => b.id === book.id)
+              ? s.allBooks.map((b) => (b.id === book.id ? book : b))
+              : [...s.allBooks, book],
+            activeSectionId: book.sections[0]?.id ?? null,
+          }));
+        },
+      };
+    },
     {
       name: 'book-editor-storage',
-      version: 2,
+      version: 3,
       migrate: (persisted, version) => {
-        const s = persisted as { book?: Partial<Book> };
+        const s = persisted as {
+          book?: Partial<Book> & { id?: string };
+          allBooks?: Book[];
+          currentBookId?: string;
+        };
         if (version < 2 && s.book) {
           s.book.coverImage = s.book.coverImage ?? null;
           s.book.paragraphIndent = s.book.paragraphIndent ?? true;
           s.book.wordCountGoal = s.book.wordCountGoal ?? 80000;
+        }
+        if (version < 3 && s.book) {
+          if (!s.book.id) s.book.id = generateId();
+          const book = s.book as Book;
+          s.allBooks = s.allBooks ?? [book];
+          s.currentBookId = s.currentBookId ?? book.id;
         }
         return persisted as BookStore;
       },

@@ -5,7 +5,7 @@ import {
   Download,
   Palette,
   BookOpen,
-  FilePlus,
+  LayoutGrid,
 } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import EditorPane from './components/Editor';
@@ -13,6 +13,7 @@ import NotesPanel from './components/NotesPanel';
 import GoalPanel from './components/GoalPanel';
 import ExportModal from './components/ExportModal';
 import TemplateModal from './components/TemplateModal';
+import LibraryModal from './components/LibraryModal';
 import { useBookStore } from './store/bookStore';
 import './styles/editor.css';
 
@@ -25,7 +26,7 @@ function TopBar() {
     toggleGoalPanel,
     openExportModal,
     openTemplateModal,
-    newBook,
+    openLibrary,
     getTotalWordCount,
   } = useBookStore();
 
@@ -36,18 +37,12 @@ function TopBar() {
     romance: 'Romance',
   };
 
-  const handleNewBook = () => {
-    if (window.confirm('Start a new book? Your current work is saved automatically.')) {
-      newBook();
-    }
-  };
-
   return (
     <header className="flex items-center gap-2 px-4 py-2 bg-white border-b border-stone-200 z-10 flex-shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2 mr-4">
         <BookOpen size={20} className="text-indigo-600" />
-        <span className="font-bold text-stone-800 tracking-tight text-base">Folio</span>
+        <span className="font-bold text-stone-800 tracking-tight text-base">DiveJump</span>
         <span className="text-xs bg-indigo-100 text-indigo-700 rounded px-1.5 py-0.5 font-medium">
           Book Editor
         </span>
@@ -76,12 +71,12 @@ function TopBar() {
       {/* Actions */}
       <div className="flex items-center gap-1">
         <button
-          onClick={handleNewBook}
+          onClick={openLibrary}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
-          title="New Book"
+          title="My Books"
         >
-          <FilePlus size={14} />
-          New
+          <LayoutGrid size={14} />
+          Library
         </button>
 
         <button
@@ -134,6 +129,7 @@ export default function App() {
     showGoalPanel,
     showExportModal,
     showTemplateModal,
+    showLibrary,
   } = useBookStore();
 
   // Select first section on first load
@@ -154,6 +150,7 @@ export default function App() {
       </div>
       {showExportModal && <ExportModal />}
       {showTemplateModal && <TemplateModal />}
+      {showLibrary && <LibraryModal />}
     </div>
   );
 }

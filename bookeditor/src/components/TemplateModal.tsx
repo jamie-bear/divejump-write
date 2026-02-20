@@ -71,14 +71,19 @@ export default function TemplateModal() {
               >
                 {/* Preview area */}
                 <div className="bg-stone-50 p-4 h-36 overflow-hidden relative">
-                  <div className="text-stone-700 leading-relaxed" style={{ fontSize: '10px' }}>
+                  <div className="text-stone-700" style={{ fontSize: '10px' }}>
                     <div
-                      className="font-bold text-sm mb-1.5"
-                      style={{ fontFamily: tmpl.titleFont, textTransform: tmpl.id === 'reedsy' ? 'uppercase' : 'none', letterSpacing: tmpl.id === 'reedsy' ? '0.05em' : 'normal' }}
+                      className="font-bold mb-1.5"
+                      style={{
+                        fontFamily: tmpl.titleFont,
+                        fontSize: '10px',
+                        textTransform: tmpl.id === 'reedsy' ? 'uppercase' : 'none',
+                        letterSpacing: tmpl.id === 'reedsy' ? '0.06em' : 'normal',
+                      }}
                     >
                       {tmpl.preview.split('\n')[0]}
                     </div>
-                    <div style={{ fontFamily: tmpl.bodyFont, lineHeight: tmpl.id === 'classic' ? '1.8' : '1.6' }}>
+                    <div style={{ fontFamily: tmpl.bodyFont, fontSize: '10px', lineHeight: tmpl.id === 'classic' ? '1.8' : '1.6' }}>
                       {tmpl.preview.split('\n').slice(2).join(' ')}
                     </div>
                   </div>

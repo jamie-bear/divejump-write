@@ -138,18 +138,6 @@
   color: #1c1917;
 }
 
-.template-reedsy .editor-paper p {
-  text-indent: 1.5em;
-}
-
-.template-reedsy .editor-paper p:first-child,
-.template-reedsy .editor-paper h1 + p,
-.template-reedsy .editor-paper h2 + p,
-.template-reedsy .editor-paper h3 + p,
-.template-reedsy .editor-paper hr + p {
-  text-indent: 0;
-}
-
 .template-reedsy .section-chapter-title {
   font-family: Lato, sans-serif;
   font-size: 1.9rem;
@@ -167,17 +155,6 @@
   color: #111827;
 }
 
-.template-classic .editor-paper p {
-  text-indent: 2em;
-}
-
-.template-classic .editor-paper p:first-child,
-.template-classic .editor-paper h1 + p,
-.template-classic .editor-paper h2 + p,
-.template-classic .editor-paper hr + p {
-  text-indent: 0;
-}
-
 .template-classic .section-chapter-title {
   font-family: "Times New Roman", Times, serif;
   font-size: 1.8rem;
@@ -193,17 +170,6 @@
   font-size: 1.05rem;
   line-height: 1.6;
   color: #1c1917;
-}
-
-.template-romance .editor-paper p {
-  text-indent: 1.25em;
-}
-
-.template-romance .editor-paper p:first-child,
-.template-romance .editor-paper h1 + p,
-.template-romance .editor-paper h2 + p,
-.template-romance .editor-paper hr + p {
-  text-indent: 0;
 }
 
 .template-romance .section-chapter-title {
@@ -235,20 +201,47 @@
 }
 
 /* ============================================================
-   Paragraph indent toggle
+   Paragraph indent toggle — book typesetting (p + p approach)
+   per Chicago Manual of Style / Reedsy Studio conventions.
+
+   Rule: indent a paragraph ONLY when it directly follows
+   another (non-empty) paragraph. The first paragraph after
+   a chapter start, heading, scene break, blockquote, or an
+   empty paragraph (paragraph break) is never indented.
    ============================================================ */
 
-/* indent-on: classic novel indentation (already the default from template CSS,
-   but we set it explicitly so it wins over indent-off) */
+/* indent-on: professional book indentation */
 .editor-paper.indent-on p {
-  text-indent: 1.5em;
-  margin-bottom: 0;
+  text-indent: 0;
+  margin: 0;
 }
+/* Core rule: paragraph after paragraph → indent */
+.editor-paper.indent-on p + p {
+  text-indent: 1.5em;
+}
+/* Reset indent after headings */
 .editor-paper.indent-on h1 + p,
 .editor-paper.indent-on h2 + p,
-.editor-paper.indent-on h3 + p,
-.editor-paper.indent-on hr + p,
-.editor-paper.indent-on p:first-child {
+.editor-paper.indent-on h3 + p {
+  text-indent: 0;
+}
+/* Reset indent after scene breaks */
+.editor-paper.indent-on hr + p {
+  text-indent: 0;
+}
+/* Reset indent after blockquotes and lists */
+.editor-paper.indent-on blockquote + p,
+.editor-paper.indent-on ul + p,
+.editor-paper.indent-on ol + p {
+  text-indent: 0;
+}
+/* Empty paragraph (Enter at start of line = paragraph break)
+   resets the indent chain — the next paragraph starts fresh. */
+.editor-paper.indent-on p:has(> br:only-child) + p {
+  text-indent: 0;
+}
+/* The empty paragraph itself should never appear indented */
+.editor-paper.indent-on p:has(> br:only-child) {
   text-indent: 0;
 }
 

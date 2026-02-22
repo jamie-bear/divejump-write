@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ChevronDown,
   ChevronRight,
@@ -184,6 +184,7 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
   const [open, setOpen] = useState(defaultOpen);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const addMenuRef = useRef<HTMLDivElement>(null);
 
   const { setActiveSection, addSection, removeSection, renameSection, reorderSections, book } = useBookStore();
 
@@ -192,10 +193,22 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
     : type === 'backmatter' ? BACK_MATTER_PRESETS
     : null;
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!showAddMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (addMenuRef.current && !addMenuRef.current.contains(e.target as Node)) {
+        setShowAddMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showAddMenu]);
+
   const handleAdd = (title?: string) => {
-    addSection(type, title);
     setShowAddMenu(false);
     setOpen(true);
+    addSection(type, title);
   };
 
   const handleDrop = (toIdx: number) => {
@@ -256,7 +269,7 @@ function SectionGroup({ label, icon, type, sections, activeSectionId, defaultOpe
           />
 
           {/* Add button */}
-          <div className="relative mx-1 mt-1">
+          <div ref={addMenuRef} className="relative mx-1 mt-1">
             <button
               onClick={() => presets ? setShowAddMenu(!showAddMenu) : handleAdd()}
               className="w-full flex items-center gap-1.5 px-3 py-1 text-xs text-stone-500 hover:text-dj-mint hover:bg-white/8 rounded-md transition-colors"
@@ -303,6 +316,11 @@ function CoverSection() {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image is too large (max 2 MB). Please choose a smaller image.');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (ev) => setCoverImage(ev.target?.result as string);
     reader.readAsDataURL(file);

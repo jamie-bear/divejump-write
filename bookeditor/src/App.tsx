@@ -4,7 +4,6 @@ import {
   Target,
   Upload,
   Palette,
-  BookOpen,
   LayoutGrid,
 } from 'lucide-react';
 import Sidebar from './components/Sidebar';
@@ -41,7 +40,7 @@ function TopBar() {
     <header className="flex items-center gap-2 px-4 py-2 bg-white border-b border-stone-200 z-10 flex-shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2 mr-4">
-        <BookOpen size={20} className="text-dj-prussian" />
+        <img src="/app-icon.svg" alt="DiveJump" className="h-6 w-6" />
         <span className="font-bold text-stone-800 tracking-tight text-base">DiveJump</span>
       </div>
 

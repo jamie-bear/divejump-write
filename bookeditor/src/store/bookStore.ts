@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Book, Section, SectionType, Note, Template, DailyGoal } from '../types';
 
 function generateId(): string {
@@ -434,6 +434,21 @@ export const useBookStore = create<BookStore>()(
     {
       name: 'book-editor-storage',
       version: 3,
+      storage: createJSONStorage(() => ({
+        getItem: (key: string) => localStorage.getItem(key),
+        setItem: (key: string, val: string) => {
+          try {
+            localStorage.setItem(key, val);
+          } catch (e) {
+            if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+              console.warn('DiveJump: localStorage quota exceeded — book data not saved. Try removing large cover images or exporting old books.');
+            } else {
+              throw e;
+            }
+          }
+        },
+        removeItem: (key: string) => localStorage.removeItem(key),
+      })),
       migrate: (persisted, version) => {
         const s = persisted as {
           book?: Partial<Book> & { id?: string };
@@ -444,6 +459,7 @@ export const useBookStore = create<BookStore>()(
           s.book.coverImage = s.book.coverImage ?? null;
           s.book.paragraphIndent = s.book.paragraphIndent ?? true;
           s.book.wordCountGoal = s.book.wordCountGoal ?? 80000;
+          s.book.chapterNumbers = s.book.chapterNumbers ?? false;
         }
         if (version < 3 && s.book) {
           if (!s.book.id) s.book.id = generateId();

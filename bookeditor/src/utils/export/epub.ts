@@ -177,12 +177,13 @@ function buildBookCSS(template: Book['template'], paragraphIndent = true): strin
     romance: '1.6',
   };
   const pStyle = paragraphIndent
-    ? `p { text-indent: 1.5em; margin: 0; }
-p:first-of-type, p:first-child, h1 + p, h2 + p, h3 + p, hr + p { text-indent: 0; }`
+    ? `p { text-indent: 0; margin: 0; }
+p + p { text-indent: 1.5em; }
+h1 + p, h2 + p, h3 + p, hr + p, hr.scene-break + p, blockquote + p, ul + p, ol + p { text-indent: 0; }`
     : `p { text-indent: 0; margin-bottom: 0.8em; }`;
 
   return `
-body { font-family: ${bodyFonts[template]}; font-size: ${sizes[template]}; line-height: ${lineHeights[template]}; margin: 1.5em 2em; color: #1a1a1a; }
+body { font-family: ${bodyFonts[template]}; font-size: ${sizes[template]}; line-height: ${lineHeights[template]}; margin: 1.5em 2em; color: #1a1a1a; text-align: justify; hyphens: auto; }
 h1 { font-family: ${titleFonts[template]}; font-size: ${titleSizes[template]}; text-align: center; margin: 2em auto 1em; ${titleExtra[template]} }
 h2 { font-size: 1.4em; margin: 1.5em 0 0.5em; }
 ${pStyle}

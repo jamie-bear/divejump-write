@@ -6,28 +6,28 @@ DiveJump Write runs entirely in your browser. No account, no cloud, no subscript
 
 ## Features
 ### Writing
-- **Rich text editor:** Powered by [Tiptap](https://tiptap.dev/) - bold, italic, underline, strikethrough, highlight, headings, blockquotes, bullet/numbered lists, and inline images
-- **Scene breaks:** (`* * *`) Inserted with a single click
+- **Rich text editor:** Powered by [Tiptap](https://tiptap.dev/) - bold, italic, underline, strikethrough, highlight, headings, blockquotes, bullet/numbered lists, and inline images.
+- **Scene breaks:** (`* * *`) Inserted with a single click.
 - **Three typesetting templates** That mirror real publishing house styles.
-- **Paragraph style toggle:** First-line indent (Chicago Manual of Style) or spaced paragraphs (blog style)
-- **Chapter numbers:** Optionally display an ordinal number above chapter titles
-- **Epigraph editor:** Dedicated UI for the front-matter epigraph page (quote + attribution)
-- **Title page:** - Auto-rendered from your book title and author name
+- **Paragraph style toggle:** First-line indent (Chicago Manual of Style) or spaced paragraphs (blog style).
+- **Chapter numbers:** Optionally display an ordinal number above chapter titles.
+- **Epigraph editor:** Dedicated UI for the front-matter epigraph page (quote + attribution).
+- **Title page:** Auto-rendered from your book title and author name.
 ### Structure
-- **Front matter:** Title Page, Half Title, Copyright, Dedication, Epigraph, Table of Contents, Foreword, Preface, and custom sections
-- **Chapters:** Unlimited, drag-and-drop reorderable
-- **Back matter:** Epilogue, Afterword, Acknowledgments, About the Author, Bibliography, Glossary, Index, and custom sections
-- **Cover art:** Full-bleed cover image upload (JPG, PNG, WebP)
-- **Section notes:** Colour-coded sticky notes per section, pinnable
-- **Drag-and-drop reordering:** Move sections across front matter, chapters, and back matter
+- **Front matter:** Title Page, Half Title, Copyright, Dedication, Epigraph, Table of Contents, Foreword, Preface, and custom sections.
+- **Chapters:** Unlimited, drag-and-drop reorderable.
+- **Back matter:** Epilogue, Afterword, Acknowledgments, About the Author, Bibliography, Glossary, Index, and custom sections.
+- **Cover art:** Full-bleed cover image upload (JPG, PNG, WebP).
+- **Section notes:** Colour-coded sticky notes per section, pinnable.
+- **Drag-and-drop reordering:** Move sections across front matter, chapters, and back matter.
 ### Goals & Progress
-- **Daily word goal:** With a live progress bar
-- **Total manuscript word count:** Goal (e.g. 80,000 words)
-- Historical goal tracking per book
+- **Daily word goal:** With a live progress bar.
+- **Total manuscript word count:** Goal (e.g. 80,000 words).
+- Historical goal tracking per book.
 ### Library and Book import/export
-- **Multiple books:** Create and switch between books in one library
-- **Export:** ePUB 3 (e-readers), PDF (print dialog), `.djbook` (project file), `.djlib` (full library backup)
-- **Import:** Restore any `.djbook` or `.djlib` file
+- **Multiple books:** Create and switch between books in one library.
+- **Export:** ePUB 3 (e-readers), PDF (print dialog), `.djbook` (project file), `.djlib` (full library backup).
+- **Import:** Restore any `.djbook` or `.djlib` file.
 ---
 ## Quick Start
 ```bash

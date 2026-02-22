@@ -1,6 +1,25 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { get as idbGet, set as idbSet, del as idbDel } from 'idb-keyval';
 import type { Book, Section, SectionType, Note, Template, DailyGoal } from '../types';
+
+// Storage adapter backed by IndexedDB (via idb-keyval).
+// On first access, any existing value in localStorage is transparently
+// migrated to IndexedDB so users don't lose data after upgrading.
+const idbStorage = {
+  getItem: async (key: string): Promise<string | null> => {
+    const lsValue = localStorage.getItem(key);
+    if (lsValue !== null) {
+      // Migrate to IndexedDB then clear from localStorage.
+      await idbSet(key, lsValue).catch(() => {});
+      localStorage.removeItem(key);
+      return lsValue;
+    }
+    return (await idbGet<string>(key)) ?? null;
+  },
+  setItem: (key: string, value: string): Promise<void> => idbSet(key, value),
+  removeItem: (key: string): Promise<void> => idbDel(key),
+};
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
@@ -434,21 +453,7 @@ export const useBookStore = create<BookStore>()(
     {
       name: 'book-editor-storage',
       version: 3,
-      storage: createJSONStorage(() => ({
-        getItem: (key: string) => localStorage.getItem(key),
-        setItem: (key: string, val: string) => {
-          try {
-            localStorage.setItem(key, val);
-          } catch (e) {
-            if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-              console.warn('DiveJump: localStorage quota exceeded — book data not saved. Try removing large cover images or exporting old books.');
-            } else {
-              throw e;
-            }
-          }
-        },
-        removeItem: (key: string) => localStorage.removeItem(key),
-      })),
+      storage: createJSONStorage(() => idbStorage),
       migrate: (persisted, version) => {
         const s = persisted as {
           book?: Partial<Book> & { id?: string };

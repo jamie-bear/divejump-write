@@ -68,14 +68,14 @@ export function exportPDF(book: Book): void {
       @top-center { content: "${esc(book.title)}"; font-style: italic; font-size: 0.75em; color: #666; }
       @bottom-center { content: counter(page); font-size: 0.8em; color: #555; }
     }
-    @page :first { @top-center { content: none; } @bottom-center { content: none; } }
+    @page :first { margin: 0; @top-center { content: none; } @bottom-center { content: none; } }
     * { box-sizing: border-box; }
     ${css}
     body { margin: 0; padding: 0; }
 
     /* Cover */
-    .cover-page { page-break-after: always; width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .cover-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .cover-page { page-break-after: always; width: 100%; height: 100vh; overflow: hidden; }
+    .cover-img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
     /* Sections */
     .chapter { page-break-before: always; }

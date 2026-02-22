@@ -17,6 +17,29 @@ import EpigraphEditor, { isEpigraphSection } from './EpigraphEditor';
 
 const AUTOSAVE_DELAY = 1000;
 
+function isTitlePageSection(section: { type: string; title: string }): boolean {
+  return section.type === 'frontmatter' && section.title.trim().toLowerCase() === 'title page';
+}
+
+function TitlePageView({ template }: { template: Template }) {
+  const { book } = useBookStore();
+  return (
+    <div className="flex-1 overflow-y-auto bg-stone-100">
+      <div className="max-w-2xl mx-auto my-8 px-8">
+        <div className={`bg-white shadow-md rounded-sm px-12 py-10 editor-paper template-${template} flex flex-col items-center justify-center`} style={{ minHeight: 560 }}>
+          <div className="flex-1 flex flex-col items-center justify-center text-center w-full py-16">
+            <h1 className="section-chapter-title">{book.title}</h1>
+            {book.author && (
+              <p className="mt-6 text-lg text-stone-500">{book.author}</p>
+            )}
+          </div>
+          <p className="text-xs text-stone-300 italic mt-auto">Edit title and author in the sidebar</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const templateClasses: Record<Template, string> = {
   reedsy: 'font-reedsy',
   classic: 'font-classic',
@@ -98,33 +121,29 @@ function CoverPane() {
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center bg-stone-100 overflow-y-auto p-8">
-      <p className="text-xs uppercase tracking-widest text-stone-400 mb-5">Book Cover</p>
-      <div className="relative group bg-white shadow-2xl rounded overflow-hidden" style={{ width: 320, height: 480 }}>
-        {book.coverImage ? (
-          <>
-            <img src={book.coverImage} className="w-full h-full object-cover" alt="Book cover" />
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3">
-              <button onClick={() => fileRef.current?.click()}
-                className="flex items-center gap-2 bg-white text-stone-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-stone-100 transition-colors">
-                <ImagePlus size={15} /> Change Cover
-              </button>
-              <button onClick={() => setCoverImage(null)}
-                className="flex items-center gap-1.5 text-white/70 hover:text-white text-xs transition-colors">
-                <X size={12} /> Remove
-              </button>
-            </div>
-          </>
-        ) : (
-          <button onClick={() => fileRef.current?.click()}
-            className="w-full h-full flex flex-col items-center justify-center gap-3 border-2 border-dashed border-stone-300 hover:border-dj-prussian hover:bg-dj-prussian/5 transition-all text-stone-400 hover:text-dj-prussian">
-            <ImagePlus size={36} />
-            <span className="text-sm font-medium">Upload Cover Image</span>
-            <span className="text-xs opacity-70">JPG, PNG, WebP</span>
-          </button>
-        )}
-      </div>
-      <p className="text-xs text-stone-400 mt-4">The cover exports as the first page in ePUB and PDF.</p>
+    <div className="flex-1 relative overflow-hidden bg-stone-900 group">
+      {book.coverImage ? (
+        <>
+          <img src={book.coverImage} className="absolute inset-0 w-full h-full object-cover" alt="Book cover" />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3">
+            <button onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-2 bg-white text-stone-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-stone-100 transition-colors">
+              <ImagePlus size={15} /> Change Cover
+            </button>
+            <button onClick={() => setCoverImage(null)}
+              className="flex items-center gap-1.5 text-white/70 hover:text-white text-xs transition-colors">
+              <X size={12} /> Remove
+            </button>
+          </div>
+        </>
+      ) : (
+        <button onClick={() => fileRef.current?.click()}
+          className="w-full h-full flex flex-col items-center justify-center gap-3 border-2 border-dashed border-stone-600 hover:border-dj-prussian bg-stone-100 hover:bg-dj-prussian/5 transition-all text-stone-400 hover:text-dj-prussian">
+          <ImagePlus size={48} />
+          <span className="text-base font-medium">Upload Cover Image</span>
+          <span className="text-sm opacity-70">JPG, PNG, WebP · Max 2 MB</span>
+        </button>
+      )}
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
     </div>
   );
@@ -245,6 +264,15 @@ export default function EditorPane() {
     return (
       <div className={`flex-1 flex flex-col min-w-0 ${templateClasses[book.template]}`}>
         <EpigraphEditor section={activeSection} template={book.template} />
+        <StatusBar wordCount={0} book={book} getTodayGoal={getTodayGoal} />
+      </div>
+    );
+  }
+
+  if (isTitlePageSection(activeSection)) {
+    return (
+      <div className={`flex-1 flex flex-col min-w-0 ${templateClasses[book.template]}`}>
+        <TitlePageView template={book.template} />
         <StatusBar wordCount={0} book={book} getTodayGoal={getTodayGoal} />
       </div>
     );

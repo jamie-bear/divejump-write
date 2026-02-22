@@ -440,7 +440,7 @@ export default function Sidebar() {
           type="backmatter"
           sections={backMatter}
           activeSectionId={activeSectionId}
-          defaultOpen={backMatter.length > 0}
+          defaultOpen={true}
         />
       </div>
 

@@ -8,12 +8,7 @@ DiveJump Write runs entirely in your browser — no account, no cloud, no subscr
 ### Writing
 - **Rich text editor** powered by [Tiptap](https://tiptap.dev/) — bold, italic, underline, strikethrough, highlight, headings, blockquotes, bullet/numbered lists, and inline images
 - **Scene breaks** (`* * *`) inserted with a single click
-- **Three typesetting templates** that mirror real publishing house styles:
-  | Template | Body font | Title font | Style |
-  |---|---|---|---|
-  | Standard | Merriweather | Lato (uppercase) | Modern literary |
-  | Classic | Times New Roman | Times New Roman (uppercase) | Traditional |
-  | Romance | Garamond | Garamond (italic) | Warm, flowing |
+- **Three typesetting templates** that mirror real publishing house styles.
 - **Paragraph style toggle** — first-line indent (Chicago Manual of Style) or spaced paragraphs (blog style)
 - **Chapter numbers** — optionally display an ordinal number above chapter titles
 - **Epigraph editor** — dedicated UI for the front-matter epigraph page (quote + attribution)
@@ -28,7 +23,7 @@ DiveJump Write runs entirely in your browser — no account, no cloud, no subscr
 - **Daily word goal** with a live progress bar
 - **Total manuscript word count** goal (e.g. 80,000 words)
 - Historical goal tracking per book
-### Library
+### Library and Book import/export
 - **Multiple books** — create and switch between books in one library
 - **Export** — ePUB 3 (e-readers), PDF (print dialog), `.djbook` (project file), `.djlib` (full library backup)
 - **Import** — restore any `.djbook` or `.djlib` file

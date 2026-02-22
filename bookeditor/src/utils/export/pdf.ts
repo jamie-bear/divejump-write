@@ -4,13 +4,20 @@ import { parseEpigraph } from '../../components/EpigraphEditor';
 
 function templatePageSize(template: Book['template']): { width: string; height: string } {
   if (template === 'classic') return { width: '8.5in', height: '11in' };
-  return { width: '6in', height: '9in' };
+  return { width: '5in', height: '8in' }; // US trade paperback
 }
 
 function templateMargins(template: Book['template']): string {
-  if (template === 'classic') return '1in';
-  if (template === 'romance') return '0.85in 1in';
-  return '0.9in 1.1in';
+  if (template === 'classic') return '0.75in';
+  if (template === 'romance') return '0.6in 0.5in';
+  return '0.625in 0.5in';
+}
+
+/** Split a CSS margin shorthand (in `in` units) into its four components. */
+function marginComponents(margins: string): { top: string; right: string; bottom: string; left: string } {
+  const parts = margins.trim().split(/\s+/);
+  if (parts.length === 1) return { top: parts[0], right: parts[0], bottom: parts[0], left: parts[0] };
+  return { top: parts[0], right: parts[1], bottom: parts[0], left: parts[1] };
 }
 
 /** Parse a CSS margin shorthand string (using `in` units) into pixel values. */
@@ -27,7 +34,7 @@ function parseMarginsPx(margins: string): { top: number; right: number; bottom: 
 }
 
 function parseHeightPx(height: string): number {
-  return parseFloat(height) * 96; // "9in" → 864
+  return parseFloat(height) * 96;
 }
 
 function isEpigraphSec(sec: { type: string; title: string; content: string }): boolean {
@@ -93,6 +100,7 @@ export function exportPDF(book: Book): void {
   const css = buildBookCSS(book.template, book.paragraphIndent ?? true);
 
   const marginsPx = parseMarginsPx(margins);
+  const mc = marginComponents(margins);
   const pageHeightPx = parseHeightPx(height);
   const contentHeightPx = pageHeightPx - marginsPx.top - marginsPx.bottom;
 
@@ -211,13 +219,26 @@ export function exportPDF(book: Book): void {
       @top-center { content: "${esc(book.title)}"; font-style: italic; font-size: 0.75em; color: #666; }
       @bottom-center { content: counter(page); font-size: 0.8em; color: #555; }
     }
-    @page :first { margin: 0; @top-center { content: none; } @bottom-center { content: none; } }
+    /* Named page for cover — guaranteed full-bleed with no header/footer */
+    @page cover-page {
+      margin: 0;
+      @top-center { content: none; }
+      @bottom-center { content: none; }
+    }
     * { box-sizing: border-box; }
     ${css}
-    body { margin: 0; padding: 0; }
+    /* Override epub body margin; @page handles margins for PDF */
+    body { margin: 0; padding: 0; font-size: 11pt; }
 
     /* Cover */
-    .cover-page { page-break-after: always; width: 100%; height: 100vh; overflow: hidden; }
+    .cover-page {
+      page: cover-page;
+      page-break-after: always;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      margin: 0; padding: 0;
+    }
     .cover-img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
     /* Sections */
@@ -266,13 +287,12 @@ export function exportPDF(book: Book): void {
     }
 
     @media print {
-      body { font-size: 11pt; }
       .chapter { page-break-before: always; }
       h1 { page-break-after: avoid; }
       .toc-entry { page-break-inside: avoid; break-inside: avoid; }
     }
     @media screen {
-      /* Use print margins so text reflows identically — essential for
+      /* Mirror print margins so text reflows identically — essential for
          accurate page-number measurement in the ToC script. */
       body {
         width: ${width};
@@ -281,9 +301,13 @@ export function exportPDF(book: Book): void {
         background: white;
         box-shadow: 0 2px 20px rgba(0,0,0,0.15);
         min-height: ${height};
-        box-sizing: border-box;
       }
-      .cover-page { height: ${height}; }
+      /* Break cover out of body padding so it fills the page edge-to-edge */
+      .cover-page {
+        margin: -${mc.top} -${mc.right} 0 -${mc.left};
+        width: calc(100% + ${mc.left} + ${mc.right});
+        height: ${height};
+      }
     }
   </style>
 </head>

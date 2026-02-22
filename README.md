@@ -6,28 +6,28 @@ DiveJump Write runs entirely in your browser — no account, no cloud, no subscr
 
 ## Features
 ### Writing
-- **Rich text editor** powered by [Tiptap](https://tiptap.dev/) — bold, italic, underline, strikethrough, highlight, headings, blockquotes, bullet/numbered lists, and inline images
-- **Scene breaks** (`* * *`) inserted with a single click
-- **Three typesetting templates** that mirror real publishing house styles.
-- **Paragraph style toggle** — first-line indent (Chicago Manual of Style) or spaced paragraphs (blog style)
-- **Chapter numbers** — optionally display an ordinal number above chapter titles
-- **Epigraph editor** — dedicated UI for the front-matter epigraph page (quote + attribution)
-- **Title page** — auto-rendered from your book title and author name
+- **Rich text editor:** Powered by [Tiptap](https://tiptap.dev/) — bold, italic, underline, strikethrough, highlight, headings, blockquotes, bullet/numbered lists, and inline images
+- **Scene breaks:** (`* * *`) Inserted with a single click
+- **Three typesetting templates** That mirror real publishing house styles.
+- **Paragraph style toggle:** First-line indent (Chicago Manual of Style) or spaced paragraphs (blog style)
+- **Chapter numbers:** Optionally display an ordinal number above chapter titles
+- **Epigraph editor:** Dedicated UI for the front-matter epigraph page (quote + attribution)
+- **Title page:** - Auto-rendered from your book title and author name
 ### Structure
-- **Front matter** — Title Page, Half Title, Copyright, Dedication, Epigraph, Table of Contents, Foreword, Preface, and custom sections
-- **Chapters** — unlimited, drag-and-drop reorderable
-- **Back matter** — Epilogue, Afterword, Acknowledgments, About the Author, Bibliography, Glossary, Index, and custom sections
-- **Cover art** — full-bleed cover image upload (JPG, PNG, WebP)
-- **Section notes** — colour-coded sticky notes per section, pinnable
+- **Front matter:** Title Page, Half Title, Copyright, Dedication, Epigraph, Table of Contents, Foreword, Preface, and custom sections
+- **Chapters:** Unlimited, drag-and-drop reorderable
+- **Back matter:** Epilogue, Afterword, Acknowledgments, About the Author, Bibliography, Glossary, Index, and custom sections
+- **Cover art:** Full-bleed cover image upload (JPG, PNG, WebP)
+- **Section notes:** Colour-coded sticky notes per section, pinnable
+- **Drag-and-drop reordering:** Move sections across front matter, chapters, and back matter
 ### Goals & Progress
-- **Daily word goal** with a live progress bar
-- **Total manuscript word count** goal (e.g. 80,000 words)
+- **Daily word goal:** With a live progress bar
+- **Total manuscript word count:** Goal (e.g. 80,000 words)
 - Historical goal tracking per book
 ### Library and Book import/export
-- **Multiple books** — create and switch between books in one library
-- **Export** — ePUB 3 (e-readers), PDF (print dialog), `.djbook` (project file), `.djlib` (full library backup)
-- **Import** — restore any `.djbook` or `.djlib` file
-- **Drag-and-drop reordering** — move sections across front matter, chapters, and back matter
+- **Multiple books:** Create and switch between books in one library
+- **Export:** ePUB 3 (e-readers), PDF (print dialog), `.djbook` (project file), `.djlib` (full library backup)
+- **Import:** Restore any `.djbook` or `.djlib` file
 ---
 ## Quick Start
 ```bash
@@ -42,7 +42,7 @@ Open [http://localhost:5173](http://localhost:5173). No environment variables, n
 npm run build      # outputs to bookeditor/dist/
 npm run preview    # preview the production build locally
 ```
-The output is a fully static site — drop the `dist/` folder onto any static host (GitHub Pages, Netlify, Cloudflare Pages, an S3 bucket, or your own server).
+The output is a fully static site. Drop the `dist/` folder onto any static host (GitHub Pages, Netlify, Cloudflare Pages, an S3 bucket, or your own server).
 ### Lint
 ```bash
 npm run lint

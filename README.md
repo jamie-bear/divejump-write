@@ -2,8 +2,6 @@
 
 A free, open-source book editor that runs entirely in your browser — no account, no cloud, no subscription. Write your novel, memoir, or non-fiction manuscript with professional typesetting right in the tab.
 
-> **Everything stays on your device.** Your words are never sent to a server.
-
 ---
 
 ## Features

@@ -21,6 +21,31 @@ function isTitlePageSection(section: { type: string; title: string }): boolean {
   return section.type === 'frontmatter' && section.title.trim().toLowerCase() === 'title page';
 }
 
+function isTocSection(section: { type: string; title: string }): boolean {
+  return section.type === 'frontmatter' && section.title.trim().toLowerCase() === 'table of contents';
+}
+
+/** Returns an appropriate editor placeholder for each section type. */
+function getPlaceholderText(section: { type: string; title: string }): string {
+  if (section.type === 'chapter') return 'Begin writing your story…';
+  const t = section.title.trim().toLowerCase();
+  const map: Record<string, string> = {
+    'foreword':         'Write your foreword…',
+    'preface':          'Write your preface…',
+    'prologue':         'Begin writing your prologue…',
+    'dedication':       'Write your dedication…',
+    'copyright':        'Add copyright information…',
+    'acknowledgments':  'Write your acknowledgments…',
+    'about the author': 'Write your author bio…',
+    'epilogue':         'Begin writing your epilogue…',
+    'afterword':        'Write your afterword…',
+    'bibliography':     'Add bibliography entries…',
+    'glossary':         'Add glossary entries…',
+    'index':            'Add your index…',
+  };
+  return map[t] ?? '';
+}
+
 function TitlePageView({ template }: { template: Template }) {
   const { book } = useBookStore();
   return (
@@ -34,6 +59,65 @@ function TitlePageView({ template }: { template: Template }) {
             )}
           </div>
           <p className="text-xs text-stone-300 italic mt-auto">Edit title and author in the sidebar</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Sections hidden from the ToC preview (same list as pdf.ts)
+const TOC_PREVIEW_EXCLUDED = new Set([
+  'half title page', 'title page', 'copyright', 'dedication',
+  'epigraph', 'table of contents',
+]);
+
+function TableOfContentsView({ template }: { template: Template }) {
+  const { book } = useBookStore();
+
+  let chapIdx = 0;
+  const entries = book.sections
+    .filter((sec) => {
+      try { if (JSON.parse(sec.content)?.__type === 'epigraph') return false; } catch { /* not epigraph json */ }
+      return !TOC_PREVIEW_EXCLUDED.has(sec.title.trim().toLowerCase());
+    })
+    .map((sec) => {
+      const chapterNum = sec.type === 'chapter' ? ++chapIdx : null;
+      return { id: sec.id, title: sec.title, chapterNum };
+    });
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-stone-100">
+      <div className="max-w-2xl mx-auto my-8 px-8">
+        <div className={`bg-white shadow-md rounded-sm px-12 py-10 editor-paper template-${template}`}
+          style={{ minHeight: 560 }}>
+          <h1 className="section-chapter-title text-center mb-10">Contents</h1>
+
+          {entries.length === 0 ? (
+            <p className="text-stone-400 text-sm italic text-center">
+              No chapters or sections to list yet — add some in the sidebar.
+            </p>
+          ) : (
+            <div>
+              {entries.map((entry) => (
+                <div key={entry.id} className="mb-4">
+                  {entry.chapterNum !== null && (
+                    <div className="text-[0.72em] uppercase tracking-widest text-stone-400 mb-0.5">
+                      Chapter {entry.chapterNum}
+                    </div>
+                  )}
+                  <div className="flex items-baseline">
+                    <span className="flex-none">{entry.title}</span>
+                    <span className="flex-1 border-b border-dotted border-stone-300 mx-3 mb-[3px]" />
+                    <span className="flex-none text-stone-300 tabular-nums text-sm select-none">–</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="text-xs text-stone-300 italic mt-10 text-center">
+            Page numbers are filled in automatically when you export to PDF
+          </p>
         </div>
       </div>
     </div>
@@ -210,12 +294,19 @@ export default function EditorPane() {
 
   const activeSection = book.sections.find((s) => s.id === activeSectionId) ?? book.sections[0];
 
+  // Keep a mutable ref so the Placeholder extension always reads the current
+  // section type without needing the editor to be recreated on section change.
+  const activeSectionRef = useRef(activeSection);
+  activeSectionRef.current = activeSection;
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ horizontalRule: { HTMLAttributes: { class: 'scene-break' } } }),
       Underline,
       Image.configure({ inline: false, allowBase64: true }),
-      Placeholder.configure({ placeholder: 'Begin writing your story…' }),
+      Placeholder.configure({
+        placeholder: () => activeSectionRef.current ? getPlaceholderText(activeSectionRef.current) : '',
+      }),
       CharacterCount,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Highlight,
@@ -273,6 +364,15 @@ export default function EditorPane() {
     return (
       <div className={`flex-1 flex flex-col min-w-0 ${templateClasses[book.template]}`}>
         <TitlePageView template={book.template} />
+        <StatusBar wordCount={0} book={book} getTodayGoal={getTodayGoal} />
+      </div>
+    );
+  }
+
+  if (isTocSection(activeSection)) {
+    return (
+      <div className={`flex-1 flex flex-col min-w-0 ${templateClasses[book.template]}`}>
+        <TableOfContentsView template={book.template} />
         <StatusBar wordCount={0} book={book} getTodayGoal={getTodayGoal} />
       </div>
     );

@@ -29,7 +29,7 @@ function createDefaultBook(): Book {
       {
         id: generateId(),
         type: 'chapter',
-        title: 'Chapter One',
+        title: 'Chapter 1',
         content: '',
         order: 1,
         notes: [],
@@ -37,7 +37,7 @@ function createDefaultBook(): Book {
     ],
     coverImage: null,
     paragraphIndent: true,
-    chapterNumbers: false,
+    chapterNumbers: true,
     dailyGoal: 1000,
     wordCountGoal: 80000,
     goalHistory: [],

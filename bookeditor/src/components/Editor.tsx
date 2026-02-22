@@ -36,6 +36,11 @@ function ImageModal({ onInsert, onClose }: ImageModalProps) {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image is too large (max 2 MB). Please choose a smaller image.');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (ev) => setUrl(ev.target?.result as string);
     reader.readAsDataURL(file);
@@ -81,6 +86,11 @@ function CoverPane() {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image is too large (max 2 MB). Please choose a smaller image.');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (ev) => setCoverImage(ev.target?.result as string);
     reader.readAsDataURL(file);

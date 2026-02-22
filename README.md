@@ -1,6 +1,7 @@
 # DiveJump Write
 
 A free, open-source book editor, inspired by [Reedsy Editor](https://github.com/reedsy/). DiveJump Write runs entirely in your browser — no account, no cloud, no subscription. Write your novel, memoir, or non-fiction manuscript with professional typesetting right in the tab.
+
 ## Features
 ### Writing
 - **Rich text editor** powered by [Tiptap](https://tiptap.dev/) — bold, italic, underline, strikethrough, highlight, headings, blockquotes, bullet/numbered lists, and inline images

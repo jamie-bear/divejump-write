@@ -51,14 +51,19 @@ function TitlePageView({ template }: { template: Template }) {
   return (
     <div className="flex-1 overflow-y-auto bg-stone-100">
       <div className="max-w-2xl mx-auto my-8 px-8">
+        {/* Section header — same pattern as all other sections; no book title here */}
+        <div className={`mb-8 text-center editor-section-header template-${template}`}>
+          <div className="text-xs uppercase tracking-widest text-stone-400 mb-2">Front Matter</div>
+          <h1 className="section-chapter-title">Title Page</h1>
+        </div>
+
+        {/* Paper — muted preview so the book title doesn't read as a section heading */}
         <div className={`bg-white shadow-md rounded-sm px-12 py-10 editor-paper template-${template} flex flex-col items-center justify-center`} style={{ minHeight: 560 }}>
-          <div className="flex-1 flex flex-col items-center justify-center text-center w-full py-16">
-            <h1 className="section-chapter-title">{book.title}</h1>
-            {book.author && (
-              <p className="mt-6 text-lg text-stone-500">{book.author}</p>
-            )}
+          <div className="flex-1 flex flex-col items-center justify-center text-center w-full py-16 text-stone-300">
+            <p className="text-2xl font-semibold">{book.title}</p>
+            {book.author && <p className="mt-4 text-base">{book.author}</p>}
           </div>
-          <p className="text-xs text-stone-300 italic mt-auto">Edit title and author in the sidebar</p>
+          <p className="text-xs text-stone-300 italic">Title and author are set in your book settings</p>
         </div>
       </div>
     </div>

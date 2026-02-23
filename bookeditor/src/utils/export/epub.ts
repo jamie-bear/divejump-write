@@ -1,5 +1,4 @@
 import type { Book, Section } from '../../types';
-import { extractTextFromJSON as _extractTextFromJSON } from '../../store/bookStore';
 import { parseEpigraph } from '../../components/EpigraphEditor';
 
 // Minimal ePUB 3 builder — pure browser, no server needed.
@@ -96,7 +95,19 @@ function buildEpigraphXHTML(sec: Section): string {
 </html>`;
 }
 
-function buildCoverXHTML(_coverSrc: string): string {
+function coverMimeType(dataUrl: string): string {
+  const match = dataUrl.match(/^data:([^;]+);/);
+  return match?.[1] ?? 'image/jpeg';
+}
+
+function coverExtension(mimeType: string): string {
+  if (mimeType === 'image/png') return 'png';
+  if (mimeType === 'image/webp') return 'webp';
+  if (mimeType === 'image/gif') return 'gif';
+  return 'jpg';
+}
+
+function buildCoverXHTML(coverExt: string): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en">
@@ -110,7 +121,7 @@ function buildCoverXHTML(_coverSrc: string): string {
 </head>
 <body epub:type="cover">
   <section epub:type="cover">
-    <img class="cover" src="../Images/cover.jpg" alt="Cover"/>
+    <img class="cover" src="../Images/cover.${coverExt}" alt="Cover"/>
   </section>
 </body>
 </html>`;
@@ -212,12 +223,12 @@ function buildContainerXML(): string {
 </container>`;
 }
 
-function buildOPF(book: Book): string {
+function buildOPF(book: Book, coverExt = 'jpg', coverMime = 'image/jpeg'): string {
   const { sections } = book;
   const hasCover = !!book.coverImage;
 
   const coverManifest = hasCover ? `
-    <item id="cover-image" href="Images/cover.jpg" media-type="image/jpeg" properties="cover-image"/>
+    <item id="cover-image" href="Images/cover.${coverExt}" media-type="${coverMime}" properties="cover-image"/>
     <item id="cover-page" href="Text/cover.xhtml" media-type="application/xhtml+xml"/>` : '';
 
   const coverMeta = hasCover ? `\n    <meta name="cover" content="cover-image"/>` : '';
@@ -299,15 +310,18 @@ async function buildEPUB(book: Book): Promise<Blob> {
   // mimetype MUST be first and uncompressed
   files.push({ name: 'mimetype', content: 'application/epub+zip' });
   files.push({ name: 'META-INF/container.xml', content: buildContainerXML() });
-  files.push({ name: 'OEBPS/content.opf', content: buildOPF(book) });
+  const coverMime = book.coverImage ? coverMimeType(book.coverImage) : 'image/jpeg';
+  const coverExt = coverExtension(coverMime);
+
+  files.push({ name: 'OEBPS/content.opf', content: buildOPF(book, coverExt, coverMime) });
   files.push({ name: 'OEBPS/toc.ncx', content: buildNCX(book) });
   files.push({ name: 'OEBPS/nav.xhtml', content: buildNavXHTML(book) });
   files.push({ name: 'OEBPS/styles/book.css', content: buildBookCSS(book.template, book.paragraphIndent ?? true) });
 
   // Cover
   if (book.coverImage) {
-    files.push({ name: 'OEBPS/Text/cover.xhtml', content: buildCoverXHTML(book.coverImage) });
-    files.push({ name: 'OEBPS/Images/cover.jpg', content: dataUrlToBytes(book.coverImage) });
+    files.push({ name: 'OEBPS/Text/cover.xhtml', content: buildCoverXHTML(coverExt) });
+    files.push({ name: `OEBPS/Images/cover.${coverExt}`, content: dataUrlToBytes(book.coverImage) });
   }
 
   // Sections
@@ -426,4 +440,3 @@ export async function exportEPUB(book: Book): Promise<void> {
 }
 
 export { jsonToHTML, buildBookCSS };
-export { _extractTextFromJSON as extractTextFromJSON };

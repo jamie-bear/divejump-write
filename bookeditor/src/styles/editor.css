@@ -28,15 +28,12 @@
 .prose-editor hr.scene-break,
 .prose-editor hr {
   border: none;
-  border-top: none;
-  text-align: center;
   margin: 2em 0;
   position: relative;
   height: 1.5em;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
   font-size: 1.1em;
   letter-spacing: 0.5em;
 }
@@ -130,8 +127,8 @@
    Template theming
    ============================================================ */
 
-/* ---- Standard template (was Reedsy) ---- */
-.template-reedsy .editor-paper {
+/* ---- Standard template (Reedsy) ---- */
+.editor-paper.template-reedsy {
   font-family: Merriweather, Georgia, serif;
   font-size: 1rem;
   line-height: 1.7;
@@ -148,7 +145,7 @@
 }
 
 /* ---- Classic template ---- */
-.template-classic .editor-paper {
+.editor-paper.template-classic {
   font-family: "Times New Roman", Times, serif;
   font-size: 1.1rem;
   line-height: 2;
@@ -165,7 +162,7 @@
 }
 
 /* ---- Romance template ---- */
-.template-romance .editor-paper {
+.editor-paper.template-romance {
   font-family: Garamond, "EB Garamond", Georgia, serif;
   font-size: 1.05rem;
   line-height: 1.6;
@@ -181,7 +178,7 @@
   color: #1c1917;
 }
 
-.template-romance .editor-paper blockquote {
+.editor-paper.template-romance blockquote {
   border-left-color: #d4a5a5;
   color: #6b4c4c;
 }
@@ -261,6 +258,7 @@
   flex-direction: column;
   justify-content: center;
   padding: 5rem 3rem;
+  position: relative;
   /* no standard px-12 py-10, the paper adds its own */
 }
 
@@ -346,11 +344,6 @@
   color: #d4d4d4;
   pointer-events: none;
   font-style: italic;
-}
-
-/* Epigraph paper needs relative positioning for the hint */
-.epigraph-paper {
-  position: relative;
 }
 
 /* ============================================================

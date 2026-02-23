@@ -26,7 +26,8 @@ function generateId(): string {
 }
 
 function today(): string {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function createDefaultBook(): Book {
@@ -130,7 +131,6 @@ interface BookStore {
   openBook: (id: string) => void;
   createBook: () => void;
   deleteBook: (id: string) => void;
-  newBook: () => void;
   importBook: (book: Book) => void;
   importBooks: (books: Book[]) => void;
 }
@@ -278,6 +278,7 @@ export const useBookStore = create<BookStore>()(
               sections: b.sections.map((sec) =>
                 sec.id === sectionId ? { ...sec, notes: [...sec.notes, newNote] } : sec
               ),
+              updatedAt: new Date().toISOString(),
             }))
           );
         },
@@ -291,6 +292,7 @@ export const useBookStore = create<BookStore>()(
                   ? { ...sec, notes: sec.notes.map((n) => (n.id === noteId ? { ...n, content } : n)) }
                   : sec
               ),
+              updatedAt: new Date().toISOString(),
             }))
           ),
 
@@ -303,6 +305,7 @@ export const useBookStore = create<BookStore>()(
                   ? { ...sec, notes: sec.notes.filter((n) => n.id !== noteId) }
                   : sec
               ),
+              updatedAt: new Date().toISOString(),
             }))
           ),
 
@@ -318,14 +321,15 @@ export const useBookStore = create<BookStore>()(
                     }
                   : sec
               ),
+              updatedAt: new Date().toISOString(),
             }))
           ),
 
         setDailyGoal: (words) =>
-          set((s) => applyBookMutation(s, (b) => ({ ...b, dailyGoal: words }))),
+          set((s) => applyBookMutation(s, (b) => ({ ...b, dailyGoal: words, updatedAt: new Date().toISOString() }))),
 
         setWordCountGoal: (words) =>
-          set((s) => applyBookMutation(s, (b) => ({ ...b, wordCountGoal: words }))),
+          set((s) => applyBookMutation(s, (b) => ({ ...b, wordCountGoal: words, updatedAt: new Date().toISOString() }))),
 
         updateDailyProgress: (words) => {
           const { book } = get();
@@ -342,7 +346,7 @@ export const useBookStore = create<BookStore>()(
               { date: todayStr, target: book.dailyGoal, wordsWritten: words },
             ];
           }
-          set((s) => applyBookMutation(s, (b) => ({ ...b, goalHistory: newHistory })));
+          set((s) => applyBookMutation(s, (b) => ({ ...b, goalHistory: newHistory, updatedAt: new Date().toISOString() })));
         },
 
         getTodayGoal: () => {
@@ -424,8 +428,6 @@ export const useBookStore = create<BookStore>()(
           }
         },
 
-        newBook: () => set({ showLibrary: true }),
-
         importBook: (book) => {
           set((s) => ({
             book,
@@ -440,12 +442,14 @@ export const useBookStore = create<BookStore>()(
         importBooks: (books) => {
           set((s) => {
             let updated = [...s.allBooks];
-            for (const book of books) {
-              const idx = updated.findIndex((b) => b.id === book.id);
-              if (idx >= 0) updated[idx] = book;
-              else updated.push(book);
+            let currentBook = s.book;
+            for (const importedBook of books) {
+              const idx = updated.findIndex((b) => b.id === importedBook.id);
+              if (idx >= 0) updated[idx] = importedBook;
+              else updated.push(importedBook);
+              if (importedBook.id === s.currentBookId) currentBook = importedBook;
             }
-            return { allBooks: updated };
+            return { allBooks: updated, book: currentBook };
           });
         },
       };

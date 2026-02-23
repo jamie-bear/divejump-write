@@ -108,7 +108,7 @@ export function exportPDF(book: Book): void {
   const hasCover = !!book.coverImage;
 
   const coverHTML = hasCover
-    ? `<div class="cover-page"><img src="${book.coverImage}" class="cover-img" alt="Cover"/></div>`
+    ? `<div class="cover-page"><img src="${esc(book.coverImage!)}" class="cover-img" alt="Cover"/></div>`
     : '';
 
   let chapterCount = 0;
@@ -246,6 +246,7 @@ export function exportPDF(book: Book): void {
     /* Sections */
     .chapter { page-break-before: always; }
     .cover-page + .chapter, .chapter:first-child { page-break-before: avoid; }
+    h1 { page-break-after: avoid; }
 
     /* Epigraph */
     .epigraph-section { display: flex; flex-direction: column; justify-content: center; min-height: 70vh; }
@@ -288,11 +289,6 @@ export function exportPDF(book: Book): void {
       font-variant-numeric: tabular-nums;
     }
 
-    @media print {
-      .chapter { page-break-before: always; }
-      h1 { page-break-after: avoid; }
-      .toc-entry { page-break-inside: avoid; break-inside: avoid; }
-    }
     @media screen {
       /* Mirror print margins so text reflows identically — essential for
          accurate page-number measurement in the ToC script. */

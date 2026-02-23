@@ -271,9 +271,19 @@ function computeStreak(history: { date: string; wordsWritten: number; target: nu
   if (!history.length) return 0;
   const sorted = history.slice().sort((a, b) => b.date.localeCompare(a.date));
   let streak = 0;
+  let prevDate: string | null = null;
   for (const entry of sorted) {
-    if (entry.wordsWritten >= (entry.target || goal)) streak++;
-    else break;
+    // Ensure dates are consecutive calendar days (no gaps allowed).
+    if (prevDate !== null) {
+      const prev: Date = new Date(`${prevDate}T00:00:00`);
+      prev.setDate(prev.getDate() - 1);
+      const expected: string = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}-${String(prev.getDate()).padStart(2, '0')}`;
+      if (entry.date !== expected) break;
+    }
+    // Use nullish coalescing so a target of 0 is treated as 0, not as goal.
+    if (entry.wordsWritten < (entry.target ?? goal)) break;
+    streak++;
+    prevDate = entry.date;
   }
   return streak;
 }

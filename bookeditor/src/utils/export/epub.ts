@@ -5,13 +5,31 @@ import { parseEpigraph } from '../../components/EpigraphEditor';
 // ePUB is a ZIP with a specific structure. We build it using
 // the JSZip-compatible approach but without JSZip (using Blob/ArrayBuffer directly).
 
-function jsonToHTML(jsonStr: string, title: string): string {
-  if (!jsonStr) return `<h1>${escHtml(title)}</h1><p></p>`;
+function isTitlePageSection(sec: { type: string; title: string }): boolean {
+  return sec.type === 'frontmatter' && sec.title.trim().toLowerCase() === 'title page';
+}
+
+function buildTitlePageHTML(book: Pick<Book, 'title' | 'author'>): string {
+  const author = book.author.trim();
+  return `<section class="title-page-auto">
+    ${author ? `<p class="title-page-author">${escHtml(author)}</p>` : ''}
+    <h1 class="title-page-book-title">${escHtml(book.title)}</h1>
+  </section>`;
+}
+
+function jsonToHTML(
+  jsonStr: string,
+  title: string,
+  options?: { includeHeading?: boolean }
+): string {
+  const includeHeading = options?.includeHeading ?? true;
+  const heading = includeHeading ? `<h1>${escHtml(title)}</h1>` : '';
+  if (!jsonStr) return `${heading}<p class="blank-paragraph">&nbsp;</p>`;
   try {
     const doc = JSON.parse(jsonStr);
-    return `<h1>${escHtml(title)}</h1>${renderNodes(doc.content || [])}`;
+    return `${heading}${renderNodes(doc.content || [])}`;
   } catch {
-    return `<h1>${escHtml(title)}</h1><p>${escHtml(jsonStr)}</p>`;
+    return `${heading}<p>${escHtml(jsonStr)}</p>`;
   }
 }
 
@@ -24,6 +42,7 @@ function renderNode(node: Record<string, unknown>): string {
     ? renderNodes(node.content as Record<string, unknown>[])
     : '';
   const text = typeof node.text === 'string' ? escHtml(node.text) : '';
+  const attrs = (node.attrs as Record<string, unknown> | undefined) ?? {};
   const marks = Array.isArray(node.marks) ? node.marks as Record<string, unknown>[] : [];
   let result = text;
   for (const mark of marks) {
@@ -31,11 +50,17 @@ function renderNode(node: Record<string, unknown>): string {
     else if (mark.type === 'italic') result = `<em>${result}</em>`;
     else if (mark.type === 'underline') result = `<u>${result}</u>`;
   }
+  const textAlign = typeof attrs.textAlign === 'string' ? attrs.textAlign : '';
+  const alignStyle = textAlign ? ` style="text-align: ${escHtml(textAlign)};"` : '';
   switch (node.type) {
-    case 'paragraph': return `<p>${content || result}</p>`;
+    case 'paragraph': {
+      const paragraph = content || result;
+      if (!paragraph) return `<p class="blank-paragraph"${alignStyle}>&nbsp;</p>`;
+      return `<p${alignStyle}>${paragraph}</p>`;
+    }
     case 'heading': {
-      const lvl = (node.attrs as Record<string, number>)?.level ?? 2;
-      return `<h${lvl}>${content}</h${lvl}>`;
+      const lvl = (attrs as Record<string, number>)?.level ?? 2;
+      return `<h${lvl}${alignStyle}>${content}</h${lvl}>`;
     }
     case 'bulletList': return `<ul>${content}</ul>`;
     case 'orderedList': return `<ol>${content}</ol>`;
@@ -138,7 +163,9 @@ function dataUrlToBytes(dataUrl: string): Uint8Array {
 
 function buildChapterXHTML(sec: Section, _book: Book, chapterNum?: number): string {
   const numHtml = chapterNum != null ? `<p class="chapter-number">${chapterNum}</p>\n    ` : '';
-  const body = jsonToHTML(sec.content, sec.title);
+  const body = isTitlePageSection(sec)
+    ? buildTitlePageHTML(_book)
+    : jsonToHTML(sec.content, sec.title);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en">
@@ -198,6 +225,7 @@ body { font-family: ${bodyFonts[template]}; font-size: ${sizes[template]}; line-
 h1 { font-family: ${titleFonts[template]}; font-size: ${titleSizes[template]}; text-align: center; margin: 2em auto 1em; ${titleExtra[template]} }
 h2 { font-size: 1.4em; margin: 1.5em 0 0.5em; }
 ${pStyle}
+p.blank-paragraph { text-indent: 0 !important; margin: 0; }
 blockquote { margin: 1em 2em; font-style: italic; }
 hr.scene-break { border: none; text-align: center; margin: 2em auto; }
 hr.scene-break::after { content: "* * *"; font-style: normal; }
@@ -205,6 +233,11 @@ img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
 
 /* Chapter number */
 .chapter-number { text-align: center; font-size: 0.85em; color: #9ca3af; letter-spacing: 0.12em; margin: 2em 0 0.2em 0; text-indent: 0 !important; }
+
+/* Title page */
+.title-page-auto { min-height: 75vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+.title-page-author { margin: 0 0 1.5em 0; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.9em; color: #57534e; text-indent: 0 !important; }
+.title-page-book-title { margin: 0; }
 
 /* Epigraph */
 .epigraph-section { display: flex; flex-direction: column; justify-content: center; min-height: 80vh; padding: 10% 0; }

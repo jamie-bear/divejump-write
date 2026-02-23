@@ -46,6 +46,20 @@ function isTocSection(sec: { type: string; title: string }): boolean {
   return sec.type === 'frontmatter' && sec.title.trim().toLowerCase() === 'table of contents';
 }
 
+function isTitlePageSection(sec: { type: string; title: string }): boolean {
+  return sec.type === 'frontmatter' && sec.title.trim().toLowerCase() === 'title page';
+}
+
+function titlePageHTML(book: Pick<Book, 'title' | 'author'>): string {
+  const author = book.author.trim();
+  return `<section class="chapter title-page-section">
+    <div class="title-page-auto">
+      ${author ? `<p class="title-page-author">${esc(author)}</p>` : ''}
+      <h1 class="title-page-book-title">${esc(book.title)}</h1>
+    </div>
+  </section>`;
+}
+
 // Front matter titles that should NOT appear in the generated ToC
 const TOC_EXCLUDED = new Set([
   'half title page', 'title page', 'copyright', 'dedication', 'epigraph', 'table of contents',
@@ -61,10 +75,15 @@ function esc(str: string): string {
 }
 
 function sectionToHTML(
+  book: Pick<Book, 'title' | 'author'>,
   sec: Book['sections'][number],
   displayChapterNum: number | undefined,
   tocChapterNum: number | undefined,
 ): string {
+  if (isTitlePageSection(sec)) {
+    return titlePageHTML(book);
+  }
+
   // Table of Contents — render a placeholder; JS fills in entries
   if (isTocSection(sec)) {
     return `<section class="chapter toc-section" id="toc-section">
@@ -116,7 +135,7 @@ export function exportPDF(book: Book): void {
     if (sec.type === 'chapter') chapterCount++;
     const displayNum = (book.chapterNumbers ?? false) && sec.type === 'chapter' ? chapterCount : undefined;
     const tocNum = sec.type === 'chapter' ? chapterCount : undefined;
-    return sectionToHTML(sec, displayNum, tocNum);
+    return sectionToHTML(book, sec, displayNum, tocNum);
   }).join('\n');
 
   // -----------------------------------------------------------------------
@@ -253,6 +272,12 @@ export function exportPDF(book: Book): void {
     .epigraph-block { margin-left: 22%; max-width: 62%; }
     .epigraph-quote { font-style: italic; text-indent: 0 !important; margin-bottom: 0.65em; }
     .epigraph-attribution { text-align: right; font-style: normal; font-size: 0.88em; color: #57534e; text-indent: 0 !important; }
+
+    /* Title page */
+    .title-page-section { display: flex; align-items: center; justify-content: center; min-height: 72vh; }
+    .title-page-auto { width: 100%; text-align: center; }
+    .title-page-author { margin: 0 0 1.5em 0; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.9em; color: #57534e; text-indent: 0 !important; }
+    .title-page-book-title { margin: 0; }
 
     /* Table of Contents */
     .toc-section h1 { margin-bottom: 1.5em; }

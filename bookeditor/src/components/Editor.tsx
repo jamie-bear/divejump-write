@@ -53,10 +53,10 @@ function TitlePageView({ template }: { template: Template }) {
       <div className="max-w-2xl mx-auto my-8 px-8">
         <div className={`bg-white shadow-md rounded-sm px-12 py-10 editor-paper template-${template} flex flex-col items-center justify-center`} style={{ minHeight: 560 }}>
           <div className="flex-1 flex flex-col items-center justify-center text-center w-full py-16">
-            <h1 className="section-chapter-title">{book.title}</h1>
             {book.author && (
-              <p className="mt-6 text-lg text-stone-500">{book.author}</p>
+              <p className="mb-6 text-lg text-stone-500 uppercase tracking-[0.08em]">{book.author}</p>
             )}
+            <h1 className="section-chapter-title">{book.title}</h1>
           </div>
           <p className="text-xs text-stone-300 italic mt-auto">Edit title and author in the sidebar</p>
         </div>

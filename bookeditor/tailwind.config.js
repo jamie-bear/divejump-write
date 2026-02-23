@@ -7,8 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        standard: ['Merriweather', 'Georgia', 'serif'],
-        lato: ['Lato', 'sans-serif'],
+        reedsy: ['Merriweather', 'Georgia', 'serif'],
         classic: ['"Times New Roman"', 'Times', 'serif'],
         romance: ['Garamond', '"EB Garamond"', 'Georgia', 'serif'],
       },

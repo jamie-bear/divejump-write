@@ -49,10 +49,10 @@ export default function EpigraphEditor({ section, template }: Props) {
   const [editingQuote, setEditingQuote] = useState(false);
   const [editingAttrib, setEditingAttrib] = useState(false);
 
-  // Sync if section changes externally
+  // Sync if section changes (different section or content updated externally, e.g. undo/import)
   useEffect(() => {
     setData(parseEpigraph(section.content));
-  }, [section.id]);
+  }, [section.id, section.content]);
 
   const save = (next: EpigraphData) => {
     updateSectionContent(section.id, JSON.stringify(next));

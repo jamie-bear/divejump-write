@@ -294,10 +294,21 @@ export default function EditorPane() {
 
   const activeSection = book.sections.find((s) => s.id === activeSectionId) ?? book.sections[0];
 
-  // Keep a mutable ref so the Placeholder extension always reads the current
-  // section type without needing the editor to be recreated on section change.
+  // Keep mutable refs so callbacks created once at editor-init always read
+  // the latest values without causing the editor to be recreated.
   const activeSectionRef = useRef(activeSection);
   activeSectionRef.current = activeSection;
+  const bookSectionsRef = useRef(book.sections);
+  bookSectionsRef.current = book.sections;
+  const updateSectionContentRef = useRef(updateSectionContent);
+  updateSectionContentRef.current = updateSectionContent;
+  const updateDailyProgressRef = useRef(updateDailyProgress);
+  updateDailyProgressRef.current = updateDailyProgress;
+
+  // Clear any pending autosave on unmount to avoid writing to a stale section.
+  useEffect(() => {
+    return () => { if (autosaveTimer.current) clearTimeout(autosaveTimer.current); };
+  }, []);
 
   const editor = useEditor({
     extensions: [
@@ -315,13 +326,14 @@ export default function EditorPane() {
     content: '',
     editorProps: { attributes: { class: 'prose-editor focus:outline-none', spellcheck: 'true' } },
     onUpdate: ({ editor }) => {
-      if (!activeSection) return;
+      const section = activeSectionRef.current;
+      if (!section) return;
       const json = JSON.stringify(editor.getJSON());
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
       autosaveTimer.current = setTimeout(() => {
-        updateSectionContent(activeSection.id, json);
-        const totalWords = computeTotalWords(book.sections, activeSection.id, json);
-        updateDailyProgress(totalWords);
+        updateSectionContentRef.current(section.id, json);
+        const totalWords = computeTotalWords(bookSectionsRef.current, section.id, json);
+        updateDailyProgressRef.current(totalWords);
       }, AUTOSAVE_DELAY);
     },
   });

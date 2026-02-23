@@ -216,10 +216,12 @@ export function exportPDF(book: Book): void {
     @page {
       size: ${width} ${height};
       margin: ${margins};
-      @top-center { content: "${esc(book.title)}"; font-style: italic; font-size: 0.75em; color: #666; }
       @bottom-center { content: counter(page); font-size: 0.8em; color: #555; }
     }
-    /* Named page for cover — guaranteed full-bleed with no header/footer */
+    /* Cover is always page 1 — @page :first is well-supported and gives
+       full-bleed (zero margins) with no page number. */
+    ${hasCover ? `@page :first { margin: 0; @bottom-center { content: none; } }` : ''}
+    /* Named-page fallback for the cover (browsers that support it) */
     @page cover-page {
       margin: 0;
       @top-center { content: none; }

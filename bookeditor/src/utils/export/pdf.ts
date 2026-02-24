@@ -259,6 +259,8 @@ export function exportPDF(book: Book): void {
       height: 100vh;
       overflow: hidden;
       margin: 0; padding: 0;
+      line-height: 0;
+      font-size: 0;
     }
     .cover-img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
@@ -334,11 +336,7 @@ export function exportPDF(book: Book): void {
     }
   </style>
 </head>
-<body>
-${coverHTML}
-${sectionsHTML}
-${tocScript}
-</body>
+<body>${coverHTML}${sectionsHTML}${tocScript}</body>
 </html>`;
 
   const printWindow = window.open('', '_blank', 'width=900,height=700');

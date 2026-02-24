@@ -1,6 +1,7 @@
 import type { Book } from '../../types';
 import { jsonToHTML, buildBookCSS } from './epub';
 import { parseEpigraph } from '../../components/EpigraphEditor';
+import { buildExportBaseName } from './filename';
 
 function templatePageSize(template: Book['template']): { width: string; height: string } {
   if (template === 'classic') return { width: '8.5in', height: '11in' };
@@ -114,6 +115,7 @@ function sectionToHTML(
 }
 
 export function exportPDF(book: Book): void {
+  const printDocumentTitle = buildExportBaseName(book.title);
   const { width, height } = templatePageSize(book.template);
   const margins = templateMargins(book.template);
   const css = buildBookCSS(book.template, book.paragraphIndent ?? true);
@@ -227,7 +229,7 @@ export function exportPDF(book: Book): void {
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>${esc(book.title)}</title>
+  <title>${esc(printDocumentTitle)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Lato:wght@400;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>

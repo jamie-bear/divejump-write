@@ -1,5 +1,6 @@
 import type { Book, Section } from '../../types';
 import { parseEpigraph } from '../../components/EpigraphEditor';
+import { buildExportBaseName } from './filename';
 
 // Minimal ePUB 3 builder — pure browser, no server needed.
 // ePUB is a ZIP with a specific structure. We build it using
@@ -467,7 +468,7 @@ export async function exportEPUB(book: Book): Promise<void> {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${book.title.replace(/[^a-z0-9]/gi, '_') || 'book'}.epub`;
+  a.download = `${buildExportBaseName(book.title)}.epub`;
   a.click();
   URL.revokeObjectURL(url);
 }

@@ -1,4 +1,5 @@
 import type { Book } from '../../types';
+import { buildExportBaseName, exportTimestamp } from './filename';
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
@@ -11,7 +12,7 @@ export function exportBookJSON(book: Book): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${book.title.replace(/[^a-z0-9]/gi, '_') || 'book'}.djbook`;
+  a.download = `${buildExportBaseName(book.title)}.djbook`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -24,7 +25,7 @@ export function exportLibraryJSON(books: Book[]): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'DiveJump-Library.djlib';
+  a.download = `DiveJump-Library_${exportTimestamp()}.djlib`;
   a.click();
   URL.revokeObjectURL(url);
 }

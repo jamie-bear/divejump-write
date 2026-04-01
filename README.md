@@ -2,6 +2,8 @@
 
 A free, open-source book editor, inspired by the [Reedsy Book Editor](https://github.com/reedsy/), but without any "paywalled" features.
 
+Demo: [https://divejump.vercel.app](https://divejump.vercel.app)
+
 DiveJump Write runs entirely in your browser. No account, no cloud, no subscription. Write your novel, memoir, or non-fiction manuscript with professional typesetting right in the tab.
 
 ## Features
